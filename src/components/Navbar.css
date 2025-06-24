@@ -1,0 +1,36 @@
+.custom-navbar {
+    background: linear-gradient(90deg, #1e3c72, #2a5298);
+    /* You can adjust colors here to suit your brand */
+}
+
+.custom-navbar .navbar-brand {
+    color: #fff;
+}
+
+.custom-navbar .nav-link {
+    color: #e0e0e0;
+    font-weight: 500;
+    transition: color 0.3s ease;
+}
+
+.custom-navbar .nav-link:hover,
+.custom-navbar .nav-link.active {
+    color: #ffcb05;
+    /* A contrasting highlight color */
+}
+
+.custom-navbar .btn-outline-light {
+    border-color: #fff;
+    color: #fff;
+}
+
+.custom-navbar .btn-outline-light:hover {
+    background-color: #fff;
+    color: #333;
+}
+
+.custom-navbar .form-control {
+    border-radius: 50px;
+    border: none;
+    padding: 0.5rem 1rem;
+}

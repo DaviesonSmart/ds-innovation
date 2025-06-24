@@ -1,0 +1,95 @@
+/* index.css */
+
+/* index.css */
+
+/* index.css */
+
+html {
+    scroll-behavior: smooth;
+}
+
+body {
+    background: linear-gradient(to right, #f4f7fa, #e9eff5);
+    font-family: 'Segoe UI', 'Roboto', sans-serif;
+    color: #333;
+    min-height: 100vh;
+    margin: 0;
+    padding-top: 80px;
+        /* Adjust depending on navbar height */
+        background-color: #f9f9f9;
+}
+
+
+section h3 {
+    font-size: 2rem;
+    margin-bottom: 2rem;
+}
+
+section .border {
+    transition: 0.3s ease-in-out;
+}
+footer a:hover {
+  color: #f8d7ff !important;
+}
+/* index.css */
+
+.nav-link {
+    position: relative;
+    transition: all 0.3s ease;
+}
+
+.nav-link::after {
+    content: '';
+    position: absolute;
+    width: 0%;
+    height: 2px;
+    bottom: -2px;
+    left: 0;
+    background-color: #ffffff;
+    transition: width 0.3s;
+}
+
+.nav-link:hover::after {
+    width: 100%;
+}
+
+.nav-link:hover {
+    transform: scale(1.05);
+    color: #f8f9fa !important;
+}
+.navbar {
+    position: sticky;
+    top: 0;
+    z-index: 1030;
+    background-color: #fff !important;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+/* index.css - Enhance Product Detail Page Look */
+
+.product-detail-bg {
+    background: linear-gradient(to right, #f8f9fc, #e8edf3);
+    min-height: 100vh;
+}
+
+.glass-card {
+    background: rgba(255, 255, 255, 0.95);
+    border-radius: 1.5rem;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.05);
+}
+
+.product-detail-bg h2 {
+    font-size: 2rem;
+    color: #1b1f23;
+}
+
+.product-detail-bg p {
+    font-size: 1rem;
+    line-height: 1.6;
+}
+
+.product-detail-bg h4 {
+    color: #2b2d42;
+}
+.newsletter-section input::placeholder {
+    color: #2c1496;
+}
