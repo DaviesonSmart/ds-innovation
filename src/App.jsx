@@ -13,6 +13,20 @@ import ScrollToTop from "./components/ScrollToTop";
 import "./index.css"; // ✅ Main global styles
 import Login from "./pages/Login";
 import Register from "./pages/Register";
+import Checkout from "./pages/Checkout";
+import OrderConfirmation from "./pages/OrderConfirmation"; // Adjust path if needed
+import PrivateRoute from "./components/PrivateRoute"; // adjust path if needed
+import { ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+import Wishlist from "./pages/Wishlist";
+import AdminDashboard from "./pages/AdminDashboard";
+import AdminLogin from "./pages/AdminLogin";
+import AdminRoute from "./components/AdminRoute";
+import Unauthorized from "./pages/Unauthorized"; // Adjust path if needed
+import AdminOrders from "./pages/AdminOrders";
+import AdminUsers from "./pages/AdminUsers";
+import AdminProducts from "./pages/AdminProducts"; 
+import AddProduct from "./pages/AddProduct";
 
 
 function App() {
@@ -25,16 +39,90 @@ function App() {
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/shop" element={<Shop />} />
-        <Route path="/cart" element={<Cart />} />
         <Route path="/product/:id" element={<ProductDetails />} />
         <Route path="/about" element={<About />} />
         <Route path="/contact" element={<Contact />} />
-        <Route path="*" element={<NotFound />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
+        <Route path="/wishlist" element={<Wishlist />} />
+        <Route path="/admin-login" element={<AdminLogin />} />
+
+        {/* ✅ Protected Routes Only */}
+        <Route
+          path="/cart"
+          element={
+            <PrivateRoute>
+              <Cart />
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/checkout"
+          element={
+            <PrivateRoute>
+              <Checkout />
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/order-confirmation"
+          element={
+            <PrivateRoute>
+              <OrderConfirmation />
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/admin"
+          element={
+            <AdminRoute>
+              <AdminDashboard />
+            </AdminRoute>
+          }
+        />
+        <Route
+          path="/admin/orders"
+          element={
+            <PrivateRoute>
+              <AdminOrders />
+            </PrivateRoute>
+          }
+        />
+
+        <Route
+          path="/admin/users"
+          element={
+            <PrivateRoute>
+              <AdminUsers />
+            </PrivateRoute>
+          }
+        />
+
+        <Route
+          path="/admin/products"
+          element={
+            <PrivateRoute>
+              <AdminProducts />
+            </PrivateRoute>
+          }
+        />
+
+        <Route
+          path="/admin/add-product"
+          element={
+            <PrivateRoute>
+              <AddProduct />
+            </PrivateRoute>
+          }
+        />
+
+        <Route path="/unauthorized" element={<Unauthorized />} />
+
+        <Route path="*" element={<NotFound />} />
       </Routes>
 
       <Footer />
+      <ToastContainer position="top-right" autoClose={3000} />
     </Router>
   );
 }

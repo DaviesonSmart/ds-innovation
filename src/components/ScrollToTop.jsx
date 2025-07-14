@@ -2,6 +2,8 @@ import React, { useState, useEffect } from "react";
 import { Button } from "react-bootstrap";
 import { FaArrowAltCircleUp } from "react-icons/fa"; // Importing the icon from react-icons
 import { motion } from "framer-motion";
+import { toast } from "react-toastify";
+
 
 export default function ScrollToTop() {
   const [isVisible, setIsVisible] = useState(false);

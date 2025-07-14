@@ -1,16 +1,51 @@
 import React, { useState } from "react";
 import { Container, Form, Button, Row, Col } from "react-bootstrap";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
+import { toast } from "react-toastify";
 
 export default function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const navigate = useNavigate();
 
   const handleLogin = (e) => {
     e.preventDefault();
-    alert(`Logged in with ${email}`);
+
+    const adminEmail = "admin@smarttech.com";
+    const adminPassword = "admin123";
+
+    if (email === adminEmail && password === adminPassword) {
+      const adminData = {
+        name: "Admin",
+        email,
+        role: "admin",
+      };
+
+      localStorage.setItem("smarttech-user", JSON.stringify(adminData));
+      localStorage.setItem("smarttech-loggedin", "true");
+
+      toast.success("Welcome Admin 👑");
+      navigate("/admin"); // Use navigate, not window.location.href
+      return;
+    }
+
+    // Check if user is normal user
+    const storedUser = JSON.parse(localStorage.getItem("smarttech-user"));
+
+    if (
+      storedUser &&
+      storedUser.email === email.trim() &&
+      storedUser.password === password
+    ) {
+      localStorage.setItem("smarttech-loggedin", "true");
+      toast.success(`Welcome back, ${storedUser.name}`);
+      navigate("/shop");
+    } else {
+      toast.error("Invalid credentials 🚫");
+    }
   };
+  
 
   return (
     <Container className="py-5">

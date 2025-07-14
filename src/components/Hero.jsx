@@ -3,6 +3,7 @@ import { Container, Row, Col, Button } from "react-bootstrap";
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
 import dress9Img from "../assets/dress9.jpg"; // Make sure to add a real image here
+import { toast } from "react-toastify";
 
 export default function Hero() {
   return (

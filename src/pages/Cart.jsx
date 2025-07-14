@@ -2,6 +2,8 @@ import React, { useContext } from "react";
 import { CartContext } from "../context/CartContext";
 import { Button, Container, Row, Col, Card } from "react-bootstrap";
 import NavigationBar from "../components/NavigationBar";
+import { Link } from "react-router-dom";
+
 
 export default function Cart() {
   const { cartItems, removeFromCart } = useContext(CartContext);
@@ -47,7 +49,9 @@ export default function Cart() {
 
             <div className="text-end mt-4">
               <h4>Total: ₦{total.toLocaleString()}</h4>
-              <Button variant="success">Proceed to Checkout</Button>
+              <Link to="/checkout" className="btn btn-success">
+                Proceed to Checkout
+              </Link>
             </div>
           </>
         )}

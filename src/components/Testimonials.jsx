@@ -1,6 +1,8 @@
 import React from "react";
 import { Card } from "react-bootstrap";
 import { motion } from "framer-motion";
+import { toast } from "react-toastify";
+
 
 const testimonials = [
   {

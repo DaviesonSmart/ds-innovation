@@ -13,13 +13,20 @@ import { Link } from "react-router-dom";
 import { CartContext } from "../context/CartContext";
 import { FaShoppingCart, FaSearch, FaBars } from "react-icons/fa";
 import { motion } from "framer-motion";
+import { toast } from "react-toastify";
+import { FaHeart } from "react-icons/fa";
+import { WishlistContext } from "../context/WishlistContext";
 
 export default function NavigationBar() {
   const { cartItems } = useContext(CartContext);
   const cartCount = cartItems.length;
-  const [show, setShow] = useState(false);
+  const { wishlistItems } = useContext(WishlistContext);
+  const wishlistCount = wishlistItems.length;
 
+  const [show, setShow] = useState(false);
   const toggleOffcanvas = () => setShow(!show);
+  const storedUser = JSON.parse(localStorage.getItem("smarttech-user"));
+  const isLoggedIn = localStorage.getItem("smarttech-loggedin") === "true";
 
   return (
     <>
@@ -127,12 +134,66 @@ export default function NavigationBar() {
                   )}
                 </Nav.Link>
 
-                <Nav.Link as={Link} to="/login" className="text-light px-2">
-                  Login
+                <Nav.Link
+                  as={Link}
+                  to="/wishlist"
+                  className="position-relative text-light"
+                >
+                  <FaHeart size={22} />
+                  {wishlistCount > 0 && (
+                    <Badge
+                      bg="danger"
+                      pill
+                      className="position-absolute top-0 start-100 translate-middle"
+                    >
+                      {wishlistCount}
+                    </Badge>
+                  )}
                 </Nav.Link>
-                <Nav.Link as={Link} to="/register" className="text-light px-2">
-                  Register
+
+                {isLoggedIn ? (
+                  <>
+                    <span className="text-light px-2">
+                      Welcome, {storedUser?.name}
+                    </span>
+                    <Button
+                      variant="outline-light"
+                      size="sm"
+                      onClick={() => {
+                        localStorage.removeItem("smarttech-loggedin");
+                        window.location.href = "/login"; // reload the page
+                      }}
+                    >
+                      Logout
+                    </Button>
+                  </>
+                ) : (
+                  <>
+                    <Nav.Link as={Link} to="/login" className="text-light px-2">
+                      Login
+                    </Nav.Link>
+                    <Nav.Link
+                      as={Link}
+                      to="/register"
+                      className="text-light px-2"
+                    >
+                      Register
+                    </Nav.Link>
+                  </>
+                )}
+                <Nav.Link as={Link} to="/wishlist" className="text-light px-3">
+                  Wishlist
                 </Nav.Link>
+                
+                {isLoggedIn && (
+                  <Nav.Link
+                    as={Link}
+                    to="/admin"
+                    className="text-warning fw-bold px-3"
+                  >
+                    Admin
+                  </Nav.Link>
+                )}
               </Nav>
             </Navbar.Collapse>
           </Container>
@@ -193,11 +254,37 @@ export default function NavigationBar() {
             <Nav.Link as={Link} to="/cart" onClick={toggleOffcanvas}>
               Cart ({cartCount})
             </Nav.Link>
-            <Nav.Link as={Link} to="/login" onClick={toggleOffcanvas}>
-              Login
+            {isLoggedIn ? (
+              <>
+                <span className="px-3 py-2">Welcome, {storedUser?.name}</span>
+                <Button
+                  variant="outline-dark"
+                  size="sm"
+                  className="ms-3 my-2"
+                  onClick={() => {
+                    localStorage.removeItem("smarttech-loggedin");
+                    window.location.href = "/login";
+                  }}
+                >
+                  Logout
+                </Button>
+              </>
+            ) : (
+              <>
+                <Nav.Link as={Link} to="/login" onClick={toggleOffcanvas}>
+                  Login
+                </Nav.Link>
+                <Nav.Link as={Link} to="/register" onClick={toggleOffcanvas}>
+                  Register
+                </Nav.Link>
+              </>
+            )}
+            <Nav.Link as={Link} to="/wishlist" onClick={toggleOffcanvas}>
+              Wishlist
             </Nav.Link>
-            <Nav.Link as={Link} to="/register" onClick={toggleOffcanvas}>
-              Register
+
+            <Nav.Link as={Link} to="/wishlist" onClick={toggleOffcanvas}>
+              Wishlist ({wishlistCount})
             </Nav.Link>
           </Nav>
         </Offcanvas.Body>

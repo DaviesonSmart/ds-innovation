@@ -1,14 +1,7 @@
-import React, { useState, useMemo } from "react";
-import products from "../data/products";
+import React, { useState, useMemo, useEffect } from "react";
 import ProductCard from "./ProductCard";
 import { Container, Row, Col, Button } from "react-bootstrap";
 import { motion } from "framer-motion";
-
-// Helper to get unique categories
-const getCategories = (data) => [
-  "All",
-  ...new Set(data.map((p) => p.category)),
-];
 
 // Price ranges
 const priceRanges = [
@@ -19,10 +12,20 @@ const priceRanges = [
 ];
 
 export default function ProductList() {
+  const [products, setProducts] = useState([]);
   const [selectedCategory, setSelectedCategory] = useState("All");
   const [selectedPriceRange, setSelectedPriceRange] = useState("All");
 
-  const categories = useMemo(() => getCategories(products), []);
+  useEffect(() => {
+    const stored = JSON.parse(localStorage.getItem("smarttech-products")) || [];
+    setProducts(stored);
+  }, []);
+
+  // Extract categories from loaded products
+  const categories = useMemo(() => {
+    const cats = products.map((p) => p.category);
+    return ["All", ...new Set(cats)];
+  }, [products]);
 
   const filteredProducts = useMemo(() => {
     return products.filter((p) => {
@@ -32,19 +35,14 @@ export default function ProductList() {
       const priceRange = priceRanges.find(
         (range) => range.label === selectedPriceRange
       );
+
       const inPrice =
         selectedPriceRange === "All" ||
         (p.price >= priceRange.min && p.price <= priceRange.max);
 
       return inCategory && inPrice;
     });
-  }, [selectedCategory, selectedPriceRange]);
-
-  //✅ Safety check
-  if (!Array.isArray(filteredProducts)) {
-    console.error("ProductList Error: filteredProducts is not an array", filteredProducts);
-    return null;
-  }
+  }, [products, selectedCategory, selectedPriceRange]);
 
   return (
     <Container fluid className="py-5 px-4">
@@ -64,8 +62,6 @@ export default function ProductList() {
         ))}
       </div>
 
-      
-
       {/* Price Filter */}
       <div className="d-flex justify-content-center mb-4 flex-wrap gap-2">
         {priceRanges.map((range) => (
@@ -82,52 +78,20 @@ export default function ProductList() {
         ))}
       </div>
 
-      
       {/* Product Grid */}
       <Row className="gx-4 gy-4">
-
-        
         {filteredProducts.length > 0 ? (
-          filteredProducts.map((product, index) => {
-            if (
-              !product ||
-              !product.id ||
-              !product.price ||
-              !product.category
-            ) {
-              console.warn("Invalid product data:", product);
-              return null;
-            }
-
-            return (
-              <Col key={product.id || index} xs={12} sm={6} md={4} lg={3}>
-                <motion.div
-                  initial={{ opacity: 0, y: 30 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.4 }}
-                >
-                  {/* <ProductCard product={product} /> */}
-                  <div
-                    style={{
-                      border: "1px solid #ccc",
-                      borderRadius: "10px",
-                      padding: "20px",
-                      textAlign: "center",
-                    }}
-                  >
-                    <img
-                      src={product.image}
-                      alt={product.name}
-                      style={{ width: "100%", height: "auto" }}
-                    />
-                    <h5>{product.name}</h5>
-                    <p>₦{product.price.toLocaleString()}</p>
-                  </div>
-                  
-                </motion.div>
-              </Col>
-            );
-          })
+          filteredProducts.map((product) => (
+            <Col key={product.id} xs={12} sm={6} md={4} lg={3}>
+              <motion.div
+                initial={{ opacity: 0, y: 30 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.4 }}
+              >
+                <ProductCard product={product} />
+              </motion.div>
+            </Col>
+          ))
         ) : (
           <Col>
             <p className="text-center text-muted">No products found.</p>

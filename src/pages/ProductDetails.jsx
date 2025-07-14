@@ -5,24 +5,27 @@ import { motion } from "framer-motion";
 import { CartContext } from "../context/CartContext";
 import NavigationBar from "../components/NavigationBar";
 import Loader from "../components/LoadingSpinner";
-import products from "../data/products";
 
 export default function ProductDetails() {
   const { id } = useParams();
   const { addToCart } = useContext(CartContext);
+
   const [loading, setLoading] = useState(true);
   const [product, setProduct] = useState(null);
 
   useEffect(() => {
+    // simulate delay
     setTimeout(() => {
-      const found = products.find((p) => p.id === parseInt(id));
+      const storedProducts =
+        JSON.parse(localStorage.getItem("smarttech-products")) || [];
+      const found = storedProducts.find((p) => p.id === parseInt(id));
       setProduct(found);
       setLoading(false);
-    }, 800); // simulate delay
+    }, 800);
   }, [id]);
 
   if (loading) return <Loader />;
-  if (!product) return <p>Product not found</p>;
+  if (!product) return <p className="text-center py-5">Product not found</p>;
 
   return (
     <>
@@ -33,7 +36,6 @@ export default function ProductDetails() {
             <motion.div
               initial={{ x: -100, opacity: 0 }}
               animate={{ x: 0, opacity: 1 }}
-              whileInView={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5 }}
             >
               <Image src={product.image} alt={product.name} fluid />
@@ -43,12 +45,11 @@ export default function ProductDetails() {
             <motion.div
               initial={{ x: 100, opacity: 0 }}
               animate={{ x: 0, opacity: 1 }}
-              whileInView={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5 }}
             >
               <h2>{product.name}</h2>
               <p>{product.description || "No description available."}</p>
-              <h4>₦{product.price.toLocaleString()}</h4>
+              <h4>₦{product.price?.toLocaleString()}</h4>
               <Button
                 variant="dark"
                 className="me-2"

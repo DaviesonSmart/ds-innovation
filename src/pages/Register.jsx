@@ -1,9 +1,12 @@
 import React, { useState } from "react";
 import { Container, Form, Button, Row, Col } from "react-bootstrap";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
+import { toast } from "react-toastify";
 
 export default function Register() {
+  const navigate = useNavigate();
+
   const [form, setForm] = useState({
     name: "",
     email: "",
@@ -16,8 +19,31 @@ export default function Register() {
 
   const handleRegister = (e) => {
     e.preventDefault();
-    alert(`Welcome, ${form.name}`);
+
+    if (!form.name || !form.email || !form.password) {
+      toast.error("Please fill in all fields");
+      return;
+    }
+
+    const existingUsers =
+      JSON.parse(localStorage.getItem("smarttech-users")) || [];
+
+    // Check for duplicate email
+    const emailExists = existingUsers.some((u) => u.email === form.email);
+    if (emailExists) {
+      toast.error("Email already registered");
+      return;
+    }
+
+    const updatedUsers = [...existingUsers, form];
+    localStorage.setItem("smarttech-users", JSON.stringify(updatedUsers));
+    localStorage.setItem("smarttech-user", JSON.stringify(form)); // optional
+
+    toast.success(`Welcome, ${form.name}! 🎉`);
+    navigate("/login");
   };
+  
+  
 
   return (
     <Container className="py-5">
