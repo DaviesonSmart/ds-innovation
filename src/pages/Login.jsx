@@ -26,20 +26,24 @@ export default function Login() {
       localStorage.setItem("smarttech-loggedin", "true");
 
       toast.success("Welcome Admin 👑");
-      navigate("/admin"); // Use navigate, not window.location.href
+      navigate("/admin");
       return;
     }
 
-    // Check if user is normal user
-    const storedUser = JSON.parse(localStorage.getItem("smarttech-user"));
+    // ✅ Fetch users list from localStorage
+    const allUsers = JSON.parse(localStorage.getItem("smarttech-users")) || [];
 
-    if (
-      storedUser &&
-      storedUser.email === email.trim() &&
-      storedUser.password === password
-    ) {
+    // ✅ Find user that matches the credentials
+    const matchedUser = allUsers.find(
+      (user) =>
+        user.email === email.trim().toLowerCase() && user.password === password
+    );
+
+    if (matchedUser) {
+      localStorage.setItem("smarttech-user", JSON.stringify(matchedUser));
       localStorage.setItem("smarttech-loggedin", "true");
-      toast.success(`Welcome back, ${storedUser.name}`);
+
+      toast.success(`Welcome back, ${matchedUser.name}`);
       navigate("/shop");
     } else {
       toast.error("Invalid credentials 🚫");

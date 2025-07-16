@@ -14,13 +14,21 @@ export default function Register() {
   });
 
   const handleChange = (e) => {
-    setForm({ ...form, [e.target.name]: e.target.value });
+    const { name, value } = e.target;
+    setForm((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
   };
 
   const handleRegister = (e) => {
     e.preventDefault();
 
-    if (!form.name || !form.email || !form.password) {
+    const name = form.name.trim();
+    const email = form.email.trim().toLowerCase(); // ✅ normalize email
+    const password = form.password;
+
+    if (!name || !email || !password) {
       toast.error("Please fill in all fields");
       return;
     }
@@ -28,22 +36,30 @@ export default function Register() {
     const existingUsers =
       JSON.parse(localStorage.getItem("smarttech-users")) || [];
 
-    // Check for duplicate email
-    const emailExists = existingUsers.some((u) => u.email === form.email);
+    const emailExists = existingUsers.some((u) => u.email === email);
     if (emailExists) {
-      toast.error("Email already registered");
+      toast.error("Email already registered ❌");
       return;
     }
 
-    const updatedUsers = [...existingUsers, form];
-    localStorage.setItem("smarttech-users", JSON.stringify(updatedUsers));
-    localStorage.setItem("smarttech-user", JSON.stringify(form)); // optional
+    const newUser = {
+      name,
+      email,
+      password,
+    };
 
-    toast.success(`Welcome, ${form.name}! 🎉`);
+    const updatedUsers = [...existingUsers, newUser];
+
+    localStorage.setItem("smarttech-users", JSON.stringify(updatedUsers));
+    // Optional: auto-login after register
+    // localStorage.setItem("smarttech-user", JSON.stringify(newUser));
+    // localStorage.setItem("smarttech-loggedin", "true");
+
+    toast.success(`Welcome, ${name}! 🎉`);
+
+    // Navigate to login
     navigate("/login");
   };
-  
-  
 
   return (
     <Container className="py-5">
