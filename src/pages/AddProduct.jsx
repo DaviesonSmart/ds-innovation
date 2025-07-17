@@ -3,6 +3,8 @@ import { Form, Button, Card, Container, Row, Col } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
 import AdminLayout from "../layouts/AdminLayout";
 import { toast } from "react-toastify";
+import { addProductToFirebase } from "../firebaseHelpers";
+
 
 export default function AddProduct() {
   const [form, setForm] = useState({
@@ -15,15 +17,7 @@ export default function AddProduct() {
 
   const navigate = useNavigate();
 
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setForm((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
-  };
-
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
     const { name, price, category, description, image } = form;
@@ -34,20 +28,22 @@ export default function AddProduct() {
     }
 
     const newProduct = {
-      id: Date.now(), // simple unique ID
       name,
       price: parseFloat(price),
       category,
       description,
       image,
+      createdAt: new Date(),
     };
 
-    const stored = JSON.parse(localStorage.getItem("smarttech-products")) || [];
-    const updated = [...stored, newProduct];
-    localStorage.setItem("smarttech-products", JSON.stringify(updated));
-
-    toast.success("🎉 Product added!");
-    navigate("/admin/products");
+    try {
+      await addProductToFirebase(newProduct);
+      toast.success("🎉 Product added to Firebase!");
+      navigate("/admin/products");
+    } catch (error) {
+      console.error("Firebase Add Error:", error);
+      toast.error("❌ Failed to add product");
+    }
   };
 
   return (
