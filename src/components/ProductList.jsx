@@ -2,6 +2,8 @@ import React, { useState, useMemo, useEffect } from "react";
 import ProductCard from "./ProductCard";
 import { Container, Row, Col, Button } from "react-bootstrap";
 import { motion } from "framer-motion";
+import { db, collection, getDocs } from "../firebaseHelpers"; // 👈 import Firestore functions
+
 
 // Price ranges
 const priceRanges = [
@@ -16,10 +18,25 @@ export default function ProductList() {
   const [selectedCategory, setSelectedCategory] = useState("All");
   const [selectedPriceRange, setSelectedPriceRange] = useState("All");
 
-  useEffect(() => {
-    const stored = JSON.parse(localStorage.getItem("smarttech-products")) || [];
-    setProducts(stored);
-  }, []);
+ useEffect(() => {
+   const fetchProducts = async () => {
+     try {
+       const querySnapshot = await getDocs(collection(db, "products"));
+       const loadedProducts = [];
+
+       querySnapshot.forEach((doc) => {
+         loadedProducts.push({ id: doc.id, ...doc.data() });
+       });
+
+       setProducts(loadedProducts);
+     } catch (error) {
+       console.error("Error fetching products:", error);
+     }
+   };
+
+   fetchProducts();
+ }, []);
+
 
   // Extract categories from loaded products
   const categories = useMemo(() => {
