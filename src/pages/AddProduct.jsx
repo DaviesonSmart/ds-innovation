@@ -5,7 +5,6 @@ import AdminLayout from "../layouts/AdminLayout";
 import { toast } from "react-toastify";
 import { addProductToFirebase } from "../firebaseHelpers";
 
-
 export default function AddProduct() {
   const [form, setForm] = useState({
     name: "",
@@ -16,6 +15,13 @@ export default function AddProduct() {
   });
 
   const navigate = useNavigate();
+
+  const handleChange = (e) => {
+    setForm((prevForm) => ({
+      ...prevForm,
+      [e.target.name]: e.target.value,
+    }));
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
