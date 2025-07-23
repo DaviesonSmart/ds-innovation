@@ -3,6 +3,8 @@ import { Container, Form, Button, Row, Col } from "react-bootstrap";
 import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { toast } from "react-toastify";
+import { createUserWithEmailAndPassword } from "firebase/auth";
+import { auth } from "../firebase"; // ✅ Firebase setup
 
 export default function Register() {
   const navigate = useNavigate();
@@ -21,44 +23,45 @@ export default function Register() {
     }));
   };
 
-  const handleRegister = (e) => {
+  const handleRegister = async (e) => {
     e.preventDefault();
 
     const name = form.name.trim();
-    const email = form.email.trim().toLowerCase(); // ✅ normalize email
-    const password = form.password;
+    const email = form.email.trim().toLowerCase();
+    const password = form.password.trim();
 
     if (!name || !email || !password) {
       toast.error("Please fill in all fields");
       return;
     }
 
-    const existingUsers =
-      JSON.parse(localStorage.getItem("smarttech-users")) || [];
+    try {
+      // ✅ Register user with Firebase Authentication
+      const userCredential = await createUserWithEmailAndPassword(
+        auth,
+        email,
+        password
+      );
 
-    const emailExists = existingUsers.some((u) => u.email === email);
-    if (emailExists) {
-      toast.error("Email already registered ❌");
-      return;
+      const user = userCredential.user;
+
+      // ✅ Optional: Save user to localStorage if you still want to
+      const existingUsers =
+        JSON.parse(localStorage.getItem("smarttech-users")) || [];
+      const newUser = { name, email, uid: user.uid };
+      const updatedUsers = [...existingUsers, newUser];
+      localStorage.setItem("smarttech-users", JSON.stringify(updatedUsers));
+
+      toast.success(`Welcome, ${name}! 🎉`);
+      navigate("/login");
+    } catch (error) {
+      console.error("Firebase registration error:", error.message);
+      if (error.code === "auth/email-already-in-use") {
+        toast.error("Email already registered ❌");
+      } else {
+        toast.error("Registration failed. Try again ❌");
+      }
     }
-
-    const newUser = {
-      name,
-      email,
-      password,
-    };
-
-    const updatedUsers = [...existingUsers, newUser];
-
-    localStorage.setItem("smarttech-users", JSON.stringify(updatedUsers));
-    // Optional: auto-login after register
-    // localStorage.setItem("smarttech-user", JSON.stringify(newUser));
-    // localStorage.setItem("smarttech-loggedin", "true");
-
-    toast.success(`Welcome, ${name}! 🎉`);
-
-    // Navigate to login
-    navigate("/login");
   };
 
   return (

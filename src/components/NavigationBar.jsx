@@ -9,24 +9,33 @@ import {
   Offcanvas,
   NavDropdown,
 } from "react-bootstrap";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { CartContext } from "../context/CartContext";
-import { FaShoppingCart, FaSearch, FaBars } from "react-icons/fa";
-import { motion } from "framer-motion";
-import { toast } from "react-toastify";
-import { FaHeart } from "react-icons/fa";
 import { WishlistContext } from "../context/WishlistContext";
+import { FaShoppingCart, FaSearch, FaBars, FaHeart } from "react-icons/fa";
+import { motion } from "framer-motion";
 
 export default function NavigationBar() {
+  const navigate = useNavigate();
   const { cartItems } = useContext(CartContext);
-  const cartCount = cartItems.length;
   const { wishlistItems } = useContext(WishlistContext);
+
+  const cartCount = cartItems.length;
   const wishlistCount = wishlistItems.length;
 
   const [show, setShow] = useState(false);
   const toggleOffcanvas = () => setShow(!show);
-  const storedUser = JSON.parse(localStorage.getItem("smarttech-user"));
+
   const isLoggedIn = localStorage.getItem("smarttech-loggedin") === "true";
+  const storedUser = JSON.parse(localStorage.getItem("smarttech-user"));
+  const isAdmin = storedUser?.role === "admin";
+
+  const handleLogout = () => {
+    localStorage.removeItem("smarttech-user");
+    localStorage.removeItem("smarttech-loggedin");
+    navigate("/login");
+    window.location.reload(); // reload to update UI state
+  };
 
   return (
     <>
@@ -44,12 +53,10 @@ export default function NavigationBar() {
           style={{ zIndex: 1030 }}
         >
           <Container>
-            {/* Brand */}
             <Navbar.Brand as={Link} to="/" className="fw-bold fs-4 brand-text">
               Smart<span className="highlight">Tech</span> 👗
             </Navbar.Brand>
 
-            {/* Mobile Toggle */}
             <Button
               variant="outline-light"
               className="d-lg-none"
@@ -58,13 +65,11 @@ export default function NavigationBar() {
               <FaBars />
             </Button>
 
-            {/* Desktop Menu */}
             <Navbar.Collapse className="justify-content-between d-none d-lg-flex">
               <Nav className="me-auto">
                 <Nav.Link as={Link} to="/" className="text-light px-3">
                   Home
                 </Nav.Link>
-
                 <NavDropdown
                   title="Shop"
                   id="shop-dropdown"
@@ -87,7 +92,6 @@ export default function NavigationBar() {
                     Joggers
                   </NavDropdown.Item>
                 </NavDropdown>
-
                 <Nav.Link as={Link} to="/about" className="text-light px-3">
                   About
                 </Nav.Link>
@@ -99,8 +103,6 @@ export default function NavigationBar() {
               <Form className="d-flex me-3" role="search">
                 <Form.Control
                   type="search"
-                  id="search-input"
-                  name="search"
                   placeholder="Search products..."
                   className="me-2 rounded-pill"
                   aria-label="Search products"
@@ -110,7 +112,6 @@ export default function NavigationBar() {
                   variant="outline-light"
                   type="submit"
                   className="rounded-pill px-3"
-                  aria-label="Submit search"
                 >
                   <FaSearch />
                 </Button>
@@ -159,13 +160,19 @@ export default function NavigationBar() {
                     <Button
                       variant="outline-light"
                       size="sm"
-                      onClick={() => {
-                        localStorage.removeItem("smarttech-loggedin");
-                        window.location.href = "/login"; // reload the page
-                      }}
+                      onClick={handleLogout}
                     >
                       Logout
                     </Button>
+                    {isAdmin && (
+                      <Nav.Link
+                        as={Link}
+                        to="/admin"
+                        className="text-warning fw-bold px-3"
+                      >
+                        Admin
+                      </Nav.Link>
+                    )}
                   </>
                 ) : (
                   <>
@@ -181,26 +188,13 @@ export default function NavigationBar() {
                     </Nav.Link>
                   </>
                 )}
-                <Nav.Link as={Link} to="/wishlist" className="text-light px-3">
-                  Wishlist
-                </Nav.Link>
-                
-                {isLoggedIn && (
-                  <Nav.Link
-                    as={Link}
-                    to="/admin"
-                    className="text-warning fw-bold px-3"
-                  >
-                    Admin
-                  </Nav.Link>
-                )}
               </Nav>
             </Navbar.Collapse>
           </Container>
         </Navbar>
       </motion.nav>
 
-      {/* Offcanvas Menu for Mobile */}
+      {/* Mobile Offcanvas Menu */}
       <Offcanvas show={show} onHide={toggleOffcanvas} placement="start">
         <Offcanvas.Header closeButton>
           <Offcanvas.Title>SmartTech Menu</Offcanvas.Title>
@@ -254,6 +248,10 @@ export default function NavigationBar() {
             <Nav.Link as={Link} to="/cart" onClick={toggleOffcanvas}>
               Cart ({cartCount})
             </Nav.Link>
+            <Nav.Link as={Link} to="/wishlist" onClick={toggleOffcanvas}>
+              Wishlist ({wishlistCount})
+            </Nav.Link>
+
             {isLoggedIn ? (
               <>
                 <span className="px-3 py-2">Welcome, {storedUser?.name}</span>
@@ -261,13 +259,20 @@ export default function NavigationBar() {
                   variant="outline-dark"
                   size="sm"
                   className="ms-3 my-2"
-                  onClick={() => {
-                    localStorage.removeItem("smarttech-loggedin");
-                    window.location.href = "/login";
-                  }}
+                  onClick={handleLogout}
                 >
                   Logout
                 </Button>
+                {isAdmin && (
+                  <Nav.Link
+                    as={Link}
+                    to="/admin"
+                    onClick={toggleOffcanvas}
+                    className="text-warning fw-bold"
+                  >
+                    Admin
+                  </Nav.Link>
+                )}
               </>
             ) : (
               <>
@@ -279,13 +284,6 @@ export default function NavigationBar() {
                 </Nav.Link>
               </>
             )}
-            <Nav.Link as={Link} to="/wishlist" onClick={toggleOffcanvas}>
-              Wishlist
-            </Nav.Link>
-
-            <Nav.Link as={Link} to="/wishlist" onClick={toggleOffcanvas}>
-              Wishlist ({wishlistCount})
-            </Nav.Link>
           </Nav>
         </Offcanvas.Body>
       </Offcanvas>

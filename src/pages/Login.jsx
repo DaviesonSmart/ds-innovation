@@ -34,10 +34,12 @@ export default function Login() {
     const allUsers = JSON.parse(localStorage.getItem("smarttech-users")) || [];
 
     // ✅ Find user that matches the credentials
-    const matchedUser = allUsers.find(
-      (user) =>
-        user.email === email.trim().toLowerCase() && user.password === password
-    );
+ const matchedUser = allUsers.find(
+   (user) =>
+     user.email === email.trim().toLowerCase() &&
+     user.password === password.trim()
+ );
+
 
     if (matchedUser) {
       localStorage.setItem("smarttech-user", JSON.stringify(matchedUser));
