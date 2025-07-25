@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { Helmet } from "react-helmet-async";
 import { Container, Row, Col, Spinner } from "react-bootstrap";
 import ProductCard from "../components/ProductCard";
-import { fetchProducts } from "../firebaseHelpers";
+import { fetchProducts } from "../firebase"; // or "./firebase" depending on location
 
 export default function Shop() {
   const [products, setProducts] = useState([]);

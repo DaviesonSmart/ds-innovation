@@ -2,8 +2,7 @@ import React, { useState, useMemo, useEffect } from "react";
 import ProductCard from "./ProductCard";
 import { Container, Row, Col, Button, Spinner } from "react-bootstrap";
 import { motion } from "framer-motion";
-import { fetchProducts } from "../firebaseHelpers";
-
+import { fetchProducts } from "../firebase"; // or "./firebase" depending on location
 
 // Price ranges
 const priceRanges = [

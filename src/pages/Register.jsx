@@ -1,8 +1,13 @@
+// Register.jsx
 import React, { useState } from "react";
 import { Container, Form, Button, Row, Col } from "react-bootstrap";
 import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { toast } from "react-toastify";
+import { createUserWithEmailAndPassword } from "firebase/auth";
+import { auth } from "../firebase"; // or wherever your firebase is
+
+import { collection, addDoc, getDocs, query, where } from "firebase/firestore";
 
 export default function Register() {
   const [name, setName] = useState("");
@@ -10,37 +15,21 @@ export default function Register() {
   const [password, setPassword] = useState("");
   const navigate = useNavigate();
 
-  const handleRegister = (e) => {
+  const handleRegister = async (e) => {
     e.preventDefault();
-
-    // Fetch users from localStorage
-    const users = JSON.parse(localStorage.getItem("smarttech-users")) || [];
-
-    // Check if email already exists
-    const emailExists = users.some(
-      (user) => user.email === email.trim().toLowerCase()
-    );
-
-    if (emailExists) {
-      toast.error("Email already exists 🚫");
-      return;
+    try {
+      const userCredential = await createUserWithEmailAndPassword(
+        auth,
+        email,
+        password
+      );
+      console.log("Registered user:", userCredential.user);
+      toast.success("Registration successful!");
+      navigate("/login");
+    } catch (error) {
+      console.error("Registration error:", error);
+      toast.error(error.message);
     }
-
-    // Create user
-    const newUser = {
-      name: name.trim(),
-      email: email.trim().toLowerCase(),
-      password: password.trim(),
-    };
-
-    // Save to localStorage
-    users.push(newUser);
-    localStorage.setItem("smarttech-users", JSON.stringify(users));
-
-    toast.success("Registration successful ✅");
-
-    // Redirect to login
-    navigate("/login");
   };
 
   return (
