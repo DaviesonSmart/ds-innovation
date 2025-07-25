@@ -4,6 +4,7 @@ import { Container, Row, Col, Button, Spinner } from "react-bootstrap";
 import { motion } from "framer-motion";
 import { fetchProducts } from "../firebaseHelpers";
 
+
 // Price ranges
 const priceRanges = [
   { label: "All", min: 0, max: Infinity },

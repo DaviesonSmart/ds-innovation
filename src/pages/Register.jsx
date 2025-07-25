@@ -3,65 +3,44 @@ import { Container, Form, Button, Row, Col } from "react-bootstrap";
 import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { toast } from "react-toastify";
-import { createUserWithEmailAndPassword } from "firebase/auth";
-import { auth } from "../firebase"; // ✅ Firebase setup
 
 export default function Register() {
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const navigate = useNavigate();
 
-  const [form, setForm] = useState({
-    name: "",
-    email: "",
-    password: "",
-  });
-
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setForm((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
-  };
-
-  const handleRegister = async (e) => {
+  const handleRegister = (e) => {
     e.preventDefault();
 
-    const name = form.name.trim();
-    const email = form.email.trim().toLowerCase();
-    const password = form.password.trim();
+    // Fetch users from localStorage
+    const users = JSON.parse(localStorage.getItem("smarttech-users")) || [];
 
-    if (!name || !email || !password) {
-      toast.error("Please fill in all fields");
+    // Check if email already exists
+    const emailExists = users.some(
+      (user) => user.email === email.trim().toLowerCase()
+    );
+
+    if (emailExists) {
+      toast.error("Email already exists 🚫");
       return;
     }
 
-    try {
-      // ✅ Register user with Firebase Authentication
-      const userCredential = await createUserWithEmailAndPassword(
-        auth,
-        email,
-        password
-      );
+    // Create user
+    const newUser = {
+      name: name.trim(),
+      email: email.trim().toLowerCase(),
+      password: password.trim(),
+    };
 
-      const user = userCredential.user;
+    // Save to localStorage
+    users.push(newUser);
+    localStorage.setItem("smarttech-users", JSON.stringify(users));
 
-      // ✅ Optional: Save user to localStorage if you still want to
-      const existingUsers =
-        JSON.parse(localStorage.getItem("smarttech-users")) || [];
-      const newUser = { name, email, uid: user.uid };
-      const updatedUsers = [...existingUsers, newUser];
-      localStorage.setItem("smarttech-users", JSON.stringify(updatedUsers));
+    toast.success("Registration successful ✅");
 
-      toast.success(`Welcome, ${name}! 🎉`);
-      navigate("/login");
-    } catch (error) {
-      console.error("Firebase registration error:", error.message);
-      if (error.code === "auth/email-already-in-use") {
-        toast.error("Email already registered ❌");
-      } else {
-        toast.error("Registration failed. Try again ❌");
-      }
-    }
+    // Redirect to login
+    navigate("/login");
   };
 
   return (
@@ -69,20 +48,19 @@ export default function Register() {
       <Row className="justify-content-center">
         <Col md={6}>
           <motion.div
-            initial={{ x: "100%", opacity: 0 }}
+            initial={{ x: "-100%", opacity: 0 }}
             animate={{ x: 0, opacity: 1 }}
-            transition={{ duration: 0.8, ease: "easeOut" }}
+            transition={{ duration: 0.8 }}
           >
-            <h3 className="text-center mb-4">Create an Account</h3>
+            <h3 className="text-center mb-4">Register on SmartTech</h3>
             <Form onSubmit={handleRegister}>
               <Form.Group className="mb-3">
                 <Form.Label>Full Name</Form.Label>
                 <Form.Control
                   type="text"
-                  name="name"
                   placeholder="Enter full name"
-                  value={form.name}
-                  onChange={handleChange}
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
                   required
                 />
               </Form.Group>
@@ -91,10 +69,9 @@ export default function Register() {
                 <Form.Label>Email address</Form.Label>
                 <Form.Control
                   type="email"
-                  name="email"
                   placeholder="Enter email"
-                  value={form.email}
-                  onChange={handleChange}
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
                   required
                 />
               </Form.Group>
@@ -103,10 +80,9 @@ export default function Register() {
                 <Form.Label>Password</Form.Label>
                 <Form.Control
                   type="password"
-                  name="password"
                   placeholder="Password"
-                  value={form.password}
-                  onChange={handleChange}
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
                   required
                 />
               </Form.Group>

@@ -3,7 +3,8 @@ import { Form, Button, Card, Container, Row, Col } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
 import AdminLayout from "../layouts/AdminLayout";
 import { toast } from "react-toastify";
-import { addProductToFirebase } from "../firebaseHelpers";
+import { addProductToDB } from "../firebaseHelpers";
+
 
 export default function AddProduct() {
   const [form, setForm] = useState({

@@ -1,37 +1,56 @@
+// src/firebaseHelpers.js
+
+import { auth, db } from "./firebase";
+import {
+  createUserWithEmailAndPassword,
+  signInWithEmailAndPassword,
+  signOut,
+  sendPasswordResetEmail,
+} from "firebase/auth";
 import {
   collection,
   addDoc,
   getDocs,
-  serverTimestamp,
+  doc,
+  deleteDoc,
+  updateDoc,
 } from "firebase/firestore";
-import { db } from "./firebase";
 
-// Add product to Firestore
-export const addProductToFirebase = async (product) => {
-  try {
-    const docRef = await addDoc(collection(db, "products"), {
-      ...product,
-      createdAt: serverTimestamp(),
-    });
-    console.log("✅ Product added with ID:", docRef.id);
-    return docRef.id;
-  } catch (e) {
-    console.error("❌ Error adding product:", e);
-    throw e;
-  }
+// 🔐 Register
+export const registerUser = (email, password) => {
+  return createUserWithEmailAndPassword(auth, email, password);
 };
 
-// Fetch all products from Firestore
+// 🔓 Login
+export const loginUser = (email, password) => {
+  return signInWithEmailAndPassword(auth, email, password);
+};
+
+// 🚪 Logout
+export const logoutUser = () => {
+  return signOut(auth);
+};
+
+// 🔁 Reset Password
+export const resetPassword = (email) => {
+  return sendPasswordResetEmail(auth, email);
+};
+
+// 🛒 Example: Add product
+export const addProductToDB = async (productData) => {
+  const docRef = await addDoc(collection(db, "products"), productData);
+  return docRef.id;
+};
+
+// ✅ Fetch all products from Firestore
 export const fetchProducts = async () => {
-  try {
-    const querySnapshot = await getDocs(collection(db, "products"));
-    const products = querySnapshot.docs.map((doc) => ({
-      id: doc.id,
-      ...doc.data(),
-    }));
-    return products;
-  } catch (error) {
-    console.error("❌ Error fetching products:", error);
-    return [];
-  }
+  const productsRef = collection(db, "products");
+  const querySnapshot = await getDocs(productsRef);
+
+  const products = [];
+  querySnapshot.forEach((doc) => {
+    products.push({ id: doc.id, ...doc.data() });
+  });
+
+  return products;
 };

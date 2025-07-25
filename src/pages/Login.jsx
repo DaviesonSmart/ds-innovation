@@ -3,55 +3,44 @@ import { Container, Form, Button, Row, Col } from "react-bootstrap";
 import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { toast } from "react-toastify";
+import { signInWithEmailAndPassword } from "firebase/auth";
+import { auth } from "../firebase"; // Make sure this file exports `auth` correctly
 
 export default function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const navigate = useNavigate();
 
-  const handleLogin = (e) => {
+  const handleLogin = async (e) => {
     e.preventDefault();
 
-    const adminEmail = "admin@smarttech.com";
-    const adminPassword = "admin123";
-
-    if (email === adminEmail && password === adminPassword) {
-      const adminData = {
-        name: "Admin",
+    try {
+      const userCredential = await signInWithEmailAndPassword(
+        auth,
         email,
-        role: "admin",
+        password
+      );
+      const user = userCredential.user;
+
+      const isAdmin = email === "admin@gmail.com"; // Replace this with real admin role logic
+
+      const userData = {
+        uid: user.uid,
+        email: user.email,
+        name: user.displayName || "User",
+        role: isAdmin ? "admin" : "customer",
       };
 
-      localStorage.setItem("smarttech-user", JSON.stringify(adminData));
+      localStorage.setItem("smarttech-user", JSON.stringify(userData));
       localStorage.setItem("smarttech-loggedin", "true");
 
-      toast.success("Welcome Admin 👑");
-      navigate("/admin");
-      return;
-    }
-
-    // ✅ Fetch users list from localStorage
-    const allUsers = JSON.parse(localStorage.getItem("smarttech-users")) || [];
-
-    // ✅ Find user that matches the credentials
- const matchedUser = allUsers.find(
-   (user) =>
-     user.email === email.trim().toLowerCase() &&
-     user.password === password.trim()
- );
-
-
-    if (matchedUser) {
-      localStorage.setItem("smarttech-user", JSON.stringify(matchedUser));
-      localStorage.setItem("smarttech-loggedin", "true");
-
-      toast.success(`Welcome back, ${matchedUser.name}`);
-      navigate("/shop");
-    } else {
-      toast.error("Invalid credentials 🚫");
+      toast.success(`Welcome back, ${userData.name}`);
+      navigate(isAdmin ? "/admin" : "/shop");
+    } catch (error) {
+      console.error(error);
+      toast.error("Invalid login credentials");
     }
   };
-  
 
   return (
     <Container className="py-5">
@@ -98,6 +87,9 @@ export default function Login() {
             <div className="text-center mt-3">
               Don't have an account? <Link to="/register">Register here</Link>
             </div>
+            <p className="mt-2">
+              <a href="/forgot-password">Forgot password?</a>
+            </p>
           </motion.div>
         </Col>
       </Row>

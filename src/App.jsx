@@ -27,6 +27,7 @@ import AdminOrders from "./pages/AdminOrders";
 import AdminUsers from "./pages/AdminUsers";
 import AdminProducts from "./pages/AdminProducts"; 
 import AddProduct from "./pages/AddProduct";
+import ForgotPassword from "./pages/ForgotPassword";
 
 
 function App() {
@@ -46,6 +47,7 @@ function App() {
         <Route path="/register" element={<Register />} />
         <Route path="/wishlist" element={<Wishlist />} />
         <Route path="/admin-login" element={<AdminLogin />} />
+        <Route path="/forgot-password" element={<ForgotPassword />} />
 
         {/* ✅ Protected Routes Only */}
         <Route
@@ -83,36 +85,33 @@ function App() {
         <Route
           path="/admin/orders"
           element={
-            <PrivateRoute>
+            <AdminRoute>
               <AdminOrders />
-            </PrivateRoute>
+            </AdminRoute>
           }
         />
-
         <Route
           path="/admin/users"
           element={
-            <PrivateRoute>
+            <AdminRoute>
               <AdminUsers />
-            </PrivateRoute>
+            </AdminRoute>
           }
         />
-
         <Route
           path="/admin/products"
           element={
-            <PrivateRoute>
+            <AdminRoute>
               <AdminProducts />
-            </PrivateRoute>
+            </AdminRoute>
           }
         />
-
         <Route
           path="/admin/add-product"
           element={
-            <PrivateRoute>
+            <AdminRoute>
               <AddProduct />
-            </PrivateRoute>
+            </AdminRoute>
           }
         />
 
