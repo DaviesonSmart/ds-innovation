@@ -1,7 +1,7 @@
 import React, { useState, useContext } from "react";
 import { useNavigate } from "react-router-dom";
 import { Container, Row, Col, Card, Form, Button } from "react-bootstrap";
-import { CartContext } from "../context/CartContext";
+import { CartContext } from "../contexts/CartContext";
 import emailjs from "emailjs-com";
 
 const Checkout = () => {
@@ -43,7 +43,8 @@ const Checkout = () => {
     };
 
     // Save to localStorage
-    const existingOrders = JSON.parse(localStorage.getItem("smarttech-orders")) || [];
+    const existingOrders =
+      JSON.parse(localStorage.getItem("smarttech-orders")) || [];
     const updatedOrders = [...existingOrders, newOrder];
     localStorage.setItem("smarttech-orders", JSON.stringify(updatedOrders));
     localStorage.setItem("smarttech-latest-order", JSON.stringify(newOrder));
@@ -55,7 +56,9 @@ const Checkout = () => {
       user_address: form.address,
       payment_method: form.payment,
       order_total: newOrder.total,
-      order_items: cartItems.map((item) => `${item.name} x${item.quantity || 1}`).join(", "),
+      order_items: cartItems
+        .map((item) => `${item.name} x${item.quantity || 1}`)
+        .join(", "),
     };
 
     emailjs
@@ -149,7 +152,9 @@ const Checkout = () => {
               </Form>
 
               <hr />
-              <h5 className="text-end">Total: ₦{calculateTotal().toLocaleString()}</h5>
+              <h5 className="text-end">
+                Total: ₦{calculateTotal().toLocaleString()}
+              </h5>
             </Card.Body>
           </Card>
         </Col>

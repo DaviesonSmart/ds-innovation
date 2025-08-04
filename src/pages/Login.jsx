@@ -3,18 +3,21 @@ import { Container, Form, Button, Row, Col } from "react-bootstrap";
 import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { toast } from "react-toastify";
+import { onAuthStateChanged } from "firebase/auth";
 
-import { auth } from "../firebase"; // ✅ Assuming you've merged helpers into firebase.js
+import { auth, loginUser } from "../firebaseHelpers";
 import { signInWithEmailAndPassword } from "firebase/auth";
 
 export default function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
+
   const navigate = useNavigate();
 
   const handleLogin = async (e) => {
     e.preventDefault();
-
+    setLoading(true); // ✅ Start loading
     try {
       const userCredential = await signInWithEmailAndPassword(
         auth,
@@ -23,26 +26,18 @@ export default function Login() {
       );
       const user = userCredential.user;
 
-      // Simple role check (later, use Firestore role if needed)
-      const isAdmin = email === "admin@gmail.com";
+      toast.success("Login successful 🎉");
+      console.log("🔥 Logged in user:", user);
 
-      const userData = {
-        uid: user.uid,
-        email: user.email,
-        name: user.displayName || "SmartTech User",
-        role: isAdmin ? "admin" : "customer",
-      };
-
-      localStorage.setItem("smarttech-user", JSON.stringify(userData));
-      localStorage.setItem("smarttech-loggedin", "true");
-
-      toast.success(`Welcome back, ${userData.name}`);
-      navigate(isAdmin ? "/admin" : "/shop");
+      // Delay to ensure global state updates
+      setTimeout(() => {
+        navigate("/shop");
+      }, 500); // small delay allows App.jsx to catch user state
     } catch (error) {
+      toast.error("Login failed: " + error.message);
       console.error("Login error:", error);
-      toast.error(
-        "Invalid login credentials. Please check your email and password."
-      );
+    } finally {
+      setLoading(false); // ✅ End loading
     }
   };
 
@@ -84,8 +79,9 @@ export default function Login() {
                 type="submit"
                 variant="dark"
                 className="w-100 rounded-pill"
+                disabled={loading}
               >
-                Login
+                {loading ? "Logging in..." : "Login"}
               </Button>
             </Form>
 

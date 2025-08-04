@@ -2,25 +2,32 @@ import React, { useEffect, useState } from "react";
 import { Helmet } from "react-helmet-async";
 import { Container, Row, Col, Spinner } from "react-bootstrap";
 import ProductCard from "../components/ProductCard";
-import { fetchProducts } from "../firebase"; // or "./firebase" depending on location
+
+import { db } from "../firebaseHelpers"; // ✅ Make sure this file exists at src/firebaseHelpers.js
+import { collection, getDocs } from "firebase/firestore";
 
 export default function Shop() {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const loadProducts = async () => {
+    const fetchData = async () => {
       try {
-        const productsFromFirebase = await fetchProducts();
-        setProducts(productsFromFirebase);
+        const productsRef = collection(db, "products");
+        const snapshot = await getDocs(productsRef);
+        const productList = snapshot.docs.map((doc) => ({
+          id: doc.id,
+          ...doc.data(),
+        }));
+        setProducts(productList);
       } catch (error) {
-        console.error("Failed to load products:", error);
+        console.error("Failed to fetch products:", error);
       } finally {
         setLoading(false);
       }
     };
 
-    loadProducts();
+    fetchData();
   }, []);
 
   return (

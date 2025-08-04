@@ -6,6 +6,8 @@ import {
   signInWithEmailAndPassword,
   signOut,
   sendPasswordResetEmail,
+  setPersistence,
+  browserLocalPersistence,
 } from "firebase/auth";
 import { getFirestore, collection, addDoc, getDocs } from "firebase/firestore";
 
@@ -23,6 +25,11 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
+
+// ✅ Set persistence for session storage (or local storage)
+setPersistence(auth, browserLocalPersistence).catch((error) => {
+  console.error("Persistence error:", error);
+});
 
 export { auth, db };
 

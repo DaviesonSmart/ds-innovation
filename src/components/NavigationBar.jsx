@@ -9,33 +9,38 @@ import {
   Offcanvas,
   NavDropdown,
 } from "react-bootstrap";
-import { Link, useNavigate } from "react-router-dom";
-import { CartContext } from "../context/CartContext";
-import { WishlistContext } from "../context/WishlistContext";
+import { NavLink, useNavigate } from "react-router-dom";
 import { FaShoppingCart, FaSearch, FaBars, FaHeart } from "react-icons/fa";
 import { motion } from "framer-motion";
 
+import { CartContext } from "../contexts/CartContext";
+import { WishlistContext } from "../contexts/WishlistContext";
+import { useAuth } from "../contexts/AuthContext";
+import { signOut } from "firebase/auth";
+import { auth } from "../firebaseHelpers";
+
 export default function NavigationBar() {
   const navigate = useNavigate();
-  const { cartItems } = useContext(CartContext);
-  const { wishlistItems } = useContext(WishlistContext);
-
-  const cartCount = cartItems.length;
-  const wishlistCount = wishlistItems.length;
+  const { cartItems = [] } = useContext(CartContext);
+  const { wishlistItems = [] } = useContext(WishlistContext);
+const { currentUser, logout, loading } = useAuth();
 
   const [show, setShow] = useState(false);
   const toggleOffcanvas = () => setShow(!show);
 
-  const isLoggedIn = localStorage.getItem("smarttech-loggedin") === "true";
-  const storedUser = JSON.parse(localStorage.getItem("smarttech-user"));
-  const isAdmin = storedUser?.role === "admin";
-
-  const handleLogout = () => {
-    localStorage.removeItem("smarttech-user");
-    localStorage.removeItem("smarttech-loggedin");
-    navigate("/login");
-    window.location.reload(); // reload to update UI state
+  const handleLogout = async () => {
+    try {
+      await signOut(auth);
+      navigate("/login");
+    } catch (error) {
+      console.error("Logout error:", error);
+    }
   };
+
+  const isAdmin = currentUser?.email === "admin@smarttech.com";
+
+  if (loading) return null;
+
 
   return (
     <>
@@ -50,16 +55,15 @@ export default function NavigationBar() {
           expand="lg"
           fixed="top"
           className="shadow-sm py-3"
-          style={{ zIndex: 1030 }}
         >
           <Container>
-            <Navbar.Brand as={Link} to="/" className="fw-bold fs-4 brand-text">
-              Smart<span className="highlight">Tech</span> 👗
+            <Navbar.Brand as={NavLink} to="/" className="fw-bold fs-4">
+              Smart<span className="text-primary">Tech</span> 👗
             </Navbar.Brand>
 
             <Button
               variant="outline-light"
-              className="d-lg-none"
+              className="d-lg-none ms-auto"
               onClick={toggleOffcanvas}
             >
               <FaBars />
@@ -67,95 +71,83 @@ export default function NavigationBar() {
 
             <Navbar.Collapse className="justify-content-between d-none d-lg-flex">
               <Nav className="me-auto">
-                <Nav.Link as={Link} to="/" className="text-light px-3">
+                <Nav.Link as={NavLink} to="/" end>
                   Home
                 </Nav.Link>
-                <NavDropdown
-                  title="Shop"
-                  id="shop-dropdown"
-                  className="text-light px-3"
-                >
-                  <NavDropdown.Item as={Link} to="/shop">
+
+                <NavDropdown title="Shop" id="shop-dropdown">
+                  <NavDropdown.Item as={NavLink} to="/shop">
                     All Products
                   </NavDropdown.Item>
                   <NavDropdown.Divider />
-                  <NavDropdown.Item as={Link} to="/shop/gowns">
+                  <NavDropdown.Item as={NavLink} to="/shop/gowns">
                     Gowns
                   </NavDropdown.Item>
-                  <NavDropdown.Item as={Link} to="/shop/skirts">
+                  <NavDropdown.Item as={NavLink} to="/shop/skirts">
                     Skirts
                   </NavDropdown.Item>
-                  <NavDropdown.Item as={Link} to="/shop/tops">
+                  <NavDropdown.Item as={NavLink} to="/shop/tops">
                     Tops
                   </NavDropdown.Item>
-                  <NavDropdown.Item as={Link} to="/shop/joggers">
+                  <NavDropdown.Item as={NavLink} to="/shop/joggers">
                     Joggers
                   </NavDropdown.Item>
                 </NavDropdown>
-                <Nav.Link as={Link} to="/about" className="text-light px-3">
+
+                <Nav.Link as={NavLink} to="/about">
                   About
                 </Nav.Link>
-                <Nav.Link as={Link} to="/contact" className="text-light px-3">
+                <Nav.Link as={NavLink} to="/contact">
                   Contact
                 </Nav.Link>
               </Nav>
 
-              <Form className="d-flex me-3" role="search">
+              <Form className="d-flex me-3">
                 <Form.Control
                   type="search"
-                  placeholder="Search products..."
+                  placeholder="Search..."
                   className="me-2 rounded-pill"
-                  aria-label="Search products"
-                  autoComplete="off"
                 />
-                <Button
-                  variant="outline-light"
-                  type="submit"
-                  className="rounded-pill px-3"
-                >
+                <Button variant="outline-light" className="rounded-pill px-3">
                   <FaSearch />
                 </Button>
               </Form>
 
               <Nav className="align-items-center">
-                <Nav.Link
-                  as={Link}
-                  to="/cart"
-                  className="position-relative text-light"
-                >
+                <Nav.Link as={NavLink} to="/cart" className="position-relative">
                   <FaShoppingCart size={22} />
-                  {cartCount > 0 && (
+                  {cartItems.length > 0 && (
                     <Badge
                       bg="danger"
                       pill
                       className="position-absolute top-0 start-100 translate-middle"
                     >
-                      {cartCount}
+                      {cartItems.length}
                     </Badge>
                   )}
                 </Nav.Link>
 
                 <Nav.Link
-                  as={Link}
+                  as={NavLink}
                   to="/wishlist"
-                  className="position-relative text-light"
+                  className="position-relative"
                 >
                   <FaHeart size={22} />
-                  {wishlistCount > 0 && (
+                  {wishlistItems.length > 0 && (
                     <Badge
                       bg="danger"
                       pill
                       className="position-absolute top-0 start-100 translate-middle"
                     >
-                      {wishlistCount}
+                      {wishlistItems.length}
                     </Badge>
                   )}
                 </Nav.Link>
 
-                {isLoggedIn ? (
+                {currentUser ? (
                   <>
                     <span className="text-light px-2">
-                      Welcome, {storedUser?.name}
+                      {currentUser.displayName || currentUser.email}
                     </span>
                     <Button
                       variant="outline-light"
@@ -166,7 +158,7 @@ export default function NavigationBar() {
                     </Button>
                     {isAdmin && (
                       <Nav.Link
-                        as={Link}
+                        as={NavLink}
                         to="/admin"
                         className="text-warning fw-bold px-3"
                       >
@@ -176,14 +168,10 @@ export default function NavigationBar() {
                   </>
                 ) : (
                   <>
-                    <Nav.Link as={Link} to="/login" className="text-light px-2">
+                    <Nav.Link as={NavLink} to="/login">
                       Login
                     </Nav.Link>
-                    <Nav.Link
-                      as={Link}
-                      to="/register"
-                      className="text-light px-2"
-                    >
+                    <Nav.Link as={NavLink} to="/register">
                       Register
                     </Nav.Link>
                   </>
@@ -194,44 +182,48 @@ export default function NavigationBar() {
         </Navbar>
       </motion.nav>
 
-      {/* Mobile Offcanvas Menu */}
+      {/* ✅ Mobile Offcanvas */}
       <Offcanvas show={show} onHide={toggleOffcanvas} placement="start">
         <Offcanvas.Header closeButton>
           <Offcanvas.Title>SmartTech Menu</Offcanvas.Title>
         </Offcanvas.Header>
         <Offcanvas.Body>
           <Nav className="flex-column">
-            <Nav.Link as={Link} to="/" onClick={toggleOffcanvas}>
+            <Nav.Link as={NavLink} to="/" onClick={toggleOffcanvas}>
               Home
             </Nav.Link>
-            <NavDropdown title="Shop" id="offcanvas-shop-dropdown">
-              <NavDropdown.Item as={Link} to="/shop" onClick={toggleOffcanvas}>
+
+            <NavDropdown title="Shop" id="mobile-shop-dropdown">
+              <NavDropdown.Item
+                as={NavLink}
+                to="/shop"
+                onClick={toggleOffcanvas}
+              >
                 All Products
               </NavDropdown.Item>
-              <NavDropdown.Divider />
               <NavDropdown.Item
-                as={Link}
+                as={NavLink}
                 to="/shop/gowns"
                 onClick={toggleOffcanvas}
               >
                 Gowns
               </NavDropdown.Item>
               <NavDropdown.Item
-                as={Link}
+                as={NavLink}
                 to="/shop/skirts"
                 onClick={toggleOffcanvas}
               >
                 Skirts
               </NavDropdown.Item>
               <NavDropdown.Item
-                as={Link}
+                as={NavLink}
                 to="/shop/tops"
                 onClick={toggleOffcanvas}
               >
                 Tops
               </NavDropdown.Item>
               <NavDropdown.Item
-                as={Link}
+                as={NavLink}
                 to="/shop/joggers"
                 onClick={toggleOffcanvas}
               >
@@ -239,22 +231,24 @@ export default function NavigationBar() {
               </NavDropdown.Item>
             </NavDropdown>
 
-            <Nav.Link as={Link} to="/about" onClick={toggleOffcanvas}>
+            <Nav.Link as={NavLink} to="/about" onClick={toggleOffcanvas}>
               About
             </Nav.Link>
-            <Nav.Link as={Link} to="/contact" onClick={toggleOffcanvas}>
+            <Nav.Link as={NavLink} to="/contact" onClick={toggleOffcanvas}>
               Contact
             </Nav.Link>
-            <Nav.Link as={Link} to="/cart" onClick={toggleOffcanvas}>
-              Cart ({cartCount})
+            <Nav.Link as={NavLink} to="/cart" onClick={toggleOffcanvas}>
+              Cart ({cartItems.length})
             </Nav.Link>
-            <Nav.Link as={Link} to="/wishlist" onClick={toggleOffcanvas}>
-              Wishlist ({wishlistCount})
+            <Nav.Link as={NavLink} to="/wishlist" onClick={toggleOffcanvas}>
+              Wishlist ({wishlistItems.length})
             </Nav.Link>
 
-            {isLoggedIn ? (
+            {currentUser ? (
               <>
-                <span className="px-3 py-2">Welcome, {storedUser?.name}</span>
+                <span className="px-3 py-2">
+                  {currentUser.displayName || currentUser.email}
+                </span>
                 <Button
                   variant="outline-dark"
                   size="sm"
@@ -265,7 +259,7 @@ export default function NavigationBar() {
                 </Button>
                 {isAdmin && (
                   <Nav.Link
-                    as={Link}
+                    as={NavLink}
                     to="/admin"
                     onClick={toggleOffcanvas}
                     className="text-warning fw-bold"
@@ -276,10 +270,10 @@ export default function NavigationBar() {
               </>
             ) : (
               <>
-                <Nav.Link as={Link} to="/login" onClick={toggleOffcanvas}>
+                <Nav.Link as={NavLink} to="/login" onClick={toggleOffcanvas}>
                   Login
                 </Nav.Link>
-                <Nav.Link as={Link} to="/register" onClick={toggleOffcanvas}>
+                <Nav.Link as={NavLink} to="/register" onClick={toggleOffcanvas}>
                   Register
                 </Nav.Link>
               </>

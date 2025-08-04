@@ -1,6 +1,6 @@
 import React, { useContext } from "react";
-import { WishlistContext } from "../context/WishlistContext";
-import { useCart } from "../context/CartContext";
+import { WishlistContext } from "../contexts/WishlistContext";
+import { useCart } from "../contexts/CartContext";
 import { Container, Row, Col, Card, Button } from "react-bootstrap";
 import { toast } from "react-toastify";
 

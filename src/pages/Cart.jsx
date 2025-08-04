@@ -1,9 +1,8 @@
 import React, { useContext } from "react";
-import { CartContext } from "../context/CartContext";
+import { CartContext } from "../contexts/CartContext";
 import { Button, Container, Row, Col, Card } from "react-bootstrap";
 import NavigationBar from "../components/NavigationBar";
 import { Link } from "react-router-dom";
-
 
 export default function Cart() {
   const { cartItems, removeFromCart } = useContext(CartContext);

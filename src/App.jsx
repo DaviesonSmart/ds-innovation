@@ -25,19 +25,18 @@ import AdminRoute from "./components/AdminRoute";
 import Unauthorized from "./pages/Unauthorized"; // Adjust path if needed
 import AdminOrders from "./pages/AdminOrders";
 import AdminUsers from "./pages/AdminUsers";
-import AdminProducts from "./pages/AdminProducts"; 
+import AdminProducts from "./pages/AdminProducts";
 import AddProduct from "./pages/AddProduct";
 import ForgotPassword from "./pages/ForgotPassword";
 
-
 function App() {
   return (
-    <Router>
+    <>
       <ScrollToTop />
-
       <NavigationBar />
 
       <Routes>
+        {/* Public Routes */}
         <Route path="/" element={<Home />} />
         <Route path="/shop" element={<Shop />} />
         <Route path="/product/:id" element={<ProductDetails />} />
@@ -49,7 +48,7 @@ function App() {
         <Route path="/admin-login" element={<AdminLogin />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
 
-        {/* ✅ Protected Routes Only */}
+        {/* Protected Routes */}
         <Route
           path="/cart"
           element={
@@ -74,6 +73,8 @@ function App() {
             </PrivateRoute>
           }
         />
+
+        {/* Admin Protected Routes */}
         <Route
           path="/admin"
           element={
@@ -116,13 +117,12 @@ function App() {
         />
 
         <Route path="/unauthorized" element={<Unauthorized />} />
-
         <Route path="*" element={<NotFound />} />
       </Routes>
 
       <Footer />
       <ToastContainer position="top-right" autoClose={3000} />
-    </Router>
+    </>
   );
 }
 

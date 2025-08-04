@@ -2,9 +2,9 @@
 import React from "react";
 import { useContext } from "react";
 import { FaHeart, FaRegHeart } from "react-icons/fa";
-import { WishlistContext } from "../context/WishlistContext";
+import { WishlistContext } from "../contexts/WishlistContext";
 import { Card, Button } from "react-bootstrap";
-import { useCart } from "../context/CartContext"; // ✅ Make sure this path is correct
+import { useCart } from "../contexts/CartContext"; // ✅ Make sure this path is correct
 import { toast } from "react-toastify";
 
 export default function ProductCard({ product }) {
@@ -27,7 +27,6 @@ export default function ProductCard({ product }) {
     }
   };
 
-
   return (
     <Card className="h-100 shadow-sm border-0 rounded-4 position-relative">
       <Card.Img
@@ -49,7 +48,7 @@ export default function ProductCard({ product }) {
       >
         {isWishlisted ? <FaHeart /> : <FaRegHeart />}
       </Button>
-      
+
       <Card.Body className="d-flex flex-column justify-content-between">
         <div>
           <Card.Title className="fw-bold">{product.name}</Card.Title>

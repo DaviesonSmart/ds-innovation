@@ -2,7 +2,7 @@ import React, { useState, useEffect, useContext } from "react";
 import { useParams, Link } from "react-router-dom";
 import { Button, Container, Row, Col, Image } from "react-bootstrap";
 import { motion } from "framer-motion";
-import { CartContext } from "../context/CartContext";
+import { CartContext } from "../contexts/CartContext";
 import NavigationBar from "../components/NavigationBar";
 import Loader from "../components/LoadingSpinner";
 

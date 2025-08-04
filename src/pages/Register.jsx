@@ -5,7 +5,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { toast } from "react-toastify";
 import { createUserWithEmailAndPassword } from "firebase/auth";
-import { auth } from "../firebase"; // or wherever your firebase is
+import { auth } from "../firebaseHelpers"; // or wherever your firebase is
 
 import { collection, addDoc, getDocs, query, where } from "firebase/firestore";
 
