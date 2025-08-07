@@ -14,7 +14,7 @@ body {
     color: #333;
     min-height: 100vh;
     margin: 0;
-    padding-top: 80px;
+    padding-top: 75px;
         /* Adjust depending on navbar height */
         background-color: #f9f9f9;
 }
@@ -92,4 +92,10 @@ footer a:hover {
 }
 .newsletter-section input::placeholder {
     color: #2c1496;
+}
+@media (max-width: 768px) {
+    body {
+        padding-top: 100px;
+        /* more space for collapsed navbar */
+    }
 }

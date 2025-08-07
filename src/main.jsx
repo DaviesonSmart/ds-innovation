@@ -1,11 +1,12 @@
-// main.jsx
 import React from "react";
 import ReactDOM from "react-dom/client";
 import App from "./App.jsx";
-import 'bootstrap/dist/css/bootstrap.min.css';
-import './index.css'; // If you have your own global styles
+
+// ✅ Style Imports
+import "bootstrap/dist/css/bootstrap.min.css";
+
+// ✅ Providers and Router
 import { BrowserRouter } from "react-router-dom";
-import { AuthProvider } from "./contexts/AuthContext.jsx";
 import { CartProvider } from "./contexts/CartContext.jsx";
 import { WishlistProvider } from "./contexts/WishlistContext.jsx";
 import { HelmetProvider } from "react-helmet-async";
@@ -14,13 +15,11 @@ ReactDOM.createRoot(document.getElementById("root")).render(
   <React.StrictMode>
     <HelmetProvider>
       <BrowserRouter>
-        <AuthProvider>
-          <CartProvider>
-            <WishlistProvider>
-              <App />
-            </WishlistProvider>
-          </CartProvider>
-        </AuthProvider>
+        <CartProvider>
+          <WishlistProvider>
+            <App />
+          </WishlistProvider>
+        </CartProvider>
       </BrowserRouter>
     </HelmetProvider>
   </React.StrictMode>

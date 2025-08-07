@@ -15,7 +15,8 @@ import { motion } from "framer-motion";
 
 import { CartContext } from "../contexts/CartContext";
 import { WishlistContext } from "../contexts/WishlistContext";
-import { useAuth } from "../contexts/AuthContext";
+import { useAuth } from "../contexts/AuthContext"; // ✅ Correct path
+
 import { signOut } from "firebase/auth";
 import { auth } from "../firebaseHelpers";
 
@@ -23,7 +24,7 @@ export default function NavigationBar() {
   const navigate = useNavigate();
   const { cartItems = [] } = useContext(CartContext);
   const { wishlistItems = [] } = useContext(WishlistContext);
-const { currentUser, logout, loading } = useAuth();
+  const { user, loading } = useAuth();
 
   const [show, setShow] = useState(false);
   const toggleOffcanvas = () => setShow(!show);
@@ -37,10 +38,9 @@ const { currentUser, logout, loading } = useAuth();
     }
   };
 
-  const isAdmin = currentUser?.email === "admin@smarttech.com";
+  const isAdmin = user?.email === "admin@smarttech.com";
 
   if (loading) return null;
-
 
   return (
     <>
@@ -116,7 +116,7 @@ const { currentUser, logout, loading } = useAuth();
               <Nav className="align-items-center">
                 <Nav.Link as={NavLink} to="/cart" className="position-relative">
                   <FaShoppingCart size={22} />
-                  {cartItems.length > 0 && (
+                  {Array.isArray(cartItems) && cartItems.length > 0 && (
                     <Badge
                       bg="danger"
                       pill
@@ -133,7 +133,7 @@ const { currentUser, logout, loading } = useAuth();
                   className="position-relative"
                 >
                   <FaHeart size={22} />
-                  {wishlistItems.length > 0 && (
+                  {Array.isArray(wishlistItems) && wishlistItems.length > 0 && (
                     <Badge
                       bg="danger"
                       pill
@@ -144,10 +144,10 @@ const { currentUser, logout, loading } = useAuth();
                   )}
                 </Nav.Link>
 
-                {currentUser ? (
+                {user ? (
                   <>
                     <span className="text-light px-2">
-                      {currentUser.displayName || currentUser.email}
+                      {user.displayName || user.email}
                     </span>
                     <Button
                       variant="outline-light"
@@ -244,10 +244,10 @@ const { currentUser, logout, loading } = useAuth();
               Wishlist ({wishlistItems.length})
             </Nav.Link>
 
-            {currentUser ? (
+            {user ? (
               <>
                 <span className="px-3 py-2">
-                  {currentUser.displayName || currentUser.email}
+                  {user.displayName || user.email}
                 </span>
                 <Button
                   variant="outline-dark"
