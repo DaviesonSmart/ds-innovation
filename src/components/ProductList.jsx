@@ -27,7 +27,7 @@ export default function ProductList() {
 
     loadProducts();
   }, []);
-
+  
   // Extract unique categories
   const categories = useMemo(() => {
     const cats = products.map((p) => p.category);
@@ -37,17 +37,19 @@ export default function ProductList() {
   // Filtered products
   const filteredProducts = useMemo(() => {
     return products.filter((p) => {
+      const category = (p?.category || "").toString().trim().toLowerCase();
       const inCategory =
         selectedCategory === "All" ||
-        p.category.toLowerCase() === selectedCategory.toLowerCase();
+        category === selectedCategory.toLowerCase();
 
       const priceRange = priceRanges.find(
         (range) => range.label === selectedPriceRange
       );
 
+      const price = Number(p?.price) || 0;
       const inPrice =
         selectedPriceRange === "All" ||
-        (p.price >= priceRange.min && p.price <= priceRange.max);
+        (price >= priceRange.min && price <= priceRange.max);
 
       return inCategory && inPrice;
     });

@@ -38,7 +38,8 @@ export default function NavigationBar() {
     }
   };
 
-  const isAdmin = user?.email === "admin@smarttech.com";
+ const isAdmin = user?.role === "admin";
+
 
   if (loading) return null;
 

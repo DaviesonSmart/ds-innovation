@@ -36,7 +36,7 @@ export default function ProductCard({ product }) {
         style={{ height: "250px", objectFit: "cover" }}
         onError={(e) => {
           e.target.onerror = null;
-          e.target.src = "/images/fallback.jpg"; // optional fallback image
+          e.target.src = "/images/fallback.jpg";
         }}
       />
 
@@ -53,7 +53,7 @@ export default function ProductCard({ product }) {
         <div>
           <Card.Title className="fw-bold">{product.name}</Card.Title>
           <Card.Text className="text-muted">
-            ₦{product.price.toLocaleString()}
+            ₦{Number(product?.price || 0).toLocaleString()}
           </Card.Text>
         </div>
         <Button

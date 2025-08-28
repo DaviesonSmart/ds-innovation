@@ -3,22 +3,23 @@ import { Container, Form, Button, Row, Col } from "react-bootstrap";
 import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { toast } from "react-toastify";
-import { onAuthStateChanged } from "firebase/auth";
-
-import { auth, loginUser } from "../firebaseHelpers";
-import { signInWithEmailAndPassword } from "firebase/auth";
+import { signInWithEmailAndPassword, signOut } from "firebase/auth";
+import { doc, getDoc } from "firebase/firestore";
+import { auth, db } from "../firebaseHelpers"; // make sure db is exported
 
 export default function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
-
   const navigate = useNavigate();
 
   const handleLogin = async (e) => {
     e.preventDefault();
-    setLoading(true); // ✅ Start loading
+    setLoading(true);
+
+    
     try {
+      // 1️⃣ Sign in with Firebase Auth
       const userCredential = await signInWithEmailAndPassword(
         auth,
         email,
@@ -26,18 +27,36 @@ export default function Login() {
       );
       const user = userCredential.user;
 
-      toast.success("Login successful 🎉");
-      console.log("🔥 Logged in user:", user);
+      // 2️⃣ Get role from Firestore
+      const userDoc = await getDoc(doc(db, "users", user.uid));
+      if (!userDoc.exists()) {
+        toast.error("No user record found!");
+        await signOut(auth);
+        return;
+      }
 
-      // Delay to ensure global state updates
-      setTimeout(() => {
+
+      const userData = userDoc.data();
+
+       
+
+      // 3️⃣ Save to localStorage
+      localStorage.setItem("smarttech-loggedin", "true");
+      localStorage.setItem("smarttech-user", JSON.stringify(userData));
+
+      toast.success("Login successful 🎉");
+
+      // 4️⃣ Redirect
+      if (userData.role?.toLowerCase() === "admin") {
+        navigate("/admin");
+      } else {
         navigate("/shop");
-      }, 500); // small delay allows App.jsx to catch user state
+      }
     } catch (error) {
       toast.error("Login failed: " + error.message);
       console.error("Login error:", error);
     } finally {
-      setLoading(false); // ✅ End loading
+      setLoading(false);
     }
   };
 

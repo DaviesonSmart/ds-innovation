@@ -4,7 +4,6 @@ import { Container, Row, Col } from "react-bootstrap";
 import { Link } from "react-router-dom";
 import { toast } from "react-toastify";
 
-
 export default function Footer() {
   return (
     <footer className="bg-dark text-light py-4 mt-5">
@@ -48,7 +47,7 @@ export default function Footer() {
               <strong>Email:</strong> support@smarttechcollections.com
             </p>
             <p className="mb-1">
-              <strong>Phone:</strong> +234 000 000 0000
+              <strong>Phone:</strong> +234 810 791 8172
             </p>
             <p className="mb-0">
               <strong>Address:</strong> Lagos, Nigeria

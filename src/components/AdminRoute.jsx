@@ -3,10 +3,21 @@ import { Navigate } from "react-router-dom";
 
 export default function AdminRoute({ children }) {
   const isLoggedIn = localStorage.getItem("smarttech-loggedin") === "true";
-  const user = JSON.parse(localStorage.getItem("smarttech-user"));
+  const userData = localStorage.getItem("smarttech-user");
 
-  if (!isLoggedIn || !user || user.role !== "admin") {
-    return <Navigate to="/unauthorized" />;
+  let user = null;
+  try {
+    user = JSON.parse(userData);
+  } catch {
+    user = null;
+  }
+
+  if (!isLoggedIn || !user || user.role?.toLowerCase() !== "admin") {
+    // Clear bad data
+    localStorage.removeItem("smarttech-loggedin");
+    localStorage.removeItem("smarttech-user");
+
+    return <Navigate to="/unauthorized" replace />;
   }
 
   return children;

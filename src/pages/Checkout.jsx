@@ -3,6 +3,9 @@ import { useNavigate } from "react-router-dom";
 import { Container, Row, Col, Card, Form, Button } from "react-bootstrap";
 import { CartContext } from "../contexts/CartContext";
 import emailjs from "emailjs-com";
+import { usePaystackPayment } from "react-paystack";
+import { db } from "../firebaseHelpers"; // ✅ your firebase config
+import { collection, addDoc, serverTimestamp } from "firebase/firestore";
 
 const Checkout = () => {
   const [form, setForm] = useState({
@@ -15,6 +18,16 @@ const Checkout = () => {
   const { cartItems, clearCart } = useContext(CartContext);
   const navigate = useNavigate();
 
+ const calculateTotal = () => {
+   return cartItems.reduce((total, item) => {
+     const price = parseFloat(item.price) || 0;
+     const qty = parseInt(item.quantity) || 1;
+     return total + price * qty;
+   }, 0);
+ };
+
+  const totalAmount = calculateTotal();
+
   const handleChange = (e) => {
     const { name, value } = e.target;
     setForm((prev) => ({
@@ -23,36 +36,53 @@ const Checkout = () => {
     }));
   };
 
-  const calculateTotal = () => {
-    return cartItems.reduce((total, item) => {
-      const price = item.price || 0;
-      const qty = item.quantity || 1;
-      return total + price * qty;
-    }, 0);
+  const paystackConfig = {
+    reference: new Date().getTime().toString(),
+    email: form.email,
+    amount: totalAmount * 100,
+    publicKey: "pk_test_b8a9325c39746dc553bdabcdcef82973d11f1430",
   };
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
+  const initializePayment = usePaystackPayment(paystackConfig);
 
+  const saveOrderToFirestore = async (orderData) => {
+    try {
+      await addDoc(collection(db, "orders"), {
+        ...orderData,
+        createdAt: serverTimestamp(),
+      });
+      console.log("✅ Order saved to Firestore");
+    } catch (error) {
+      console.error("❌ Firestore error:", error);
+    }
+  };
+
+  const processOrder = async (status, paymentRef = null) => {
     const newOrder = {
       ...form,
       cart: cartItems,
-      total: calculateTotal(),
-      status: "Pending",
+      total: totalAmount,
+      status,
+      paymentRef,
       date: new Date().toISOString(),
     };
 
-    // Save to localStorage
+    // Save to localStorage (backup)
     const existingOrders =
       JSON.parse(localStorage.getItem("smarttech-orders")) || [];
-    const updatedOrders = [...existingOrders, newOrder];
-    localStorage.setItem("smarttech-orders", JSON.stringify(updatedOrders));
+    localStorage.setItem(
+      "smarttech-orders",
+      JSON.stringify([...existingOrders, newOrder])
+    );
     localStorage.setItem("smarttech-latest-order", JSON.stringify(newOrder));
 
-    // Send Email with EmailJS
+    // Save to Firestore
+    await saveOrderToFirestore(newOrder);
+
+    // Send Email via EmailJS
     const templateParams = {
       user_name: form.name,
-      user_email: form.email, // ✅ must match the variable in your EmailJS template
+      user_email: form.email,
       user_address: form.address,
       payment_method: form.payment,
       order_total: newOrder.total,
@@ -63,10 +93,10 @@ const Checkout = () => {
 
     emailjs
       .send(
-        "service_k6i5nf9", // ✅ Your EmailJS Service ID
-        "template_eiyfbib", // ✅ Your EmailJS Template ID
+        "service_k6i5nf9",
+        "template_eiyfbib",
         templateParams,
-        "XnyElvWzPmfiuzilU" // ✅ Your EmailJS Public Key
+        "XnyElvWzPmfiuzilU"
       )
       .then(() => {
         console.log("✅ Email sent!");
@@ -74,10 +104,39 @@ const Checkout = () => {
         navigate("/order-confirmation");
       })
       .catch((err) => {
-        console.error("❌ Failed to send email:", err);
-        alert("Email failed: " + err.text); // optional fallback
+        console.error("❌ Email failed:", err);
       });
   };
+
+  const handlePaymentSuccess = (reference) => {
+    console.log("✅ Payment successful:", reference);
+    processOrder("Paid", reference.reference);
+  };
+
+  const handlePaymentClose = () => {
+    console.log("❌ Payment popup closed by user");
+  };
+
+const handleSubmit = (e) => {
+  e.preventDefault();
+
+  if (!form.email || !form.email.includes("@")) {
+    alert("Please enter a valid email address");
+    return;
+  }
+
+  if (totalAmount <= 0) {
+    alert("Your cart is empty or total is invalid");
+    return;
+  }
+
+  if (form.payment === "Paystack Online Payment") {
+    initializePayment(handlePaymentSuccess, handlePaymentClose);
+  } else {
+    processOrder("Pending");
+  }
+};
+
 
   return (
     <Container className="my-5">
@@ -94,7 +153,6 @@ const Checkout = () => {
                     name="name"
                     value={form.name}
                     onChange={handleChange}
-                    placeholder="Enter your full name"
                     required
                   />
                 </Form.Group>
@@ -106,7 +164,6 @@ const Checkout = () => {
                     name="email"
                     value={form.email}
                     onChange={handleChange}
-                    placeholder="Enter your email"
                     required
                   />
                 </Form.Group>
@@ -119,7 +176,6 @@ const Checkout = () => {
                     name="address"
                     value={form.address}
                     onChange={handleChange}
-                    placeholder="Enter your delivery address"
                     required
                   />
                 </Form.Group>
@@ -143,17 +199,27 @@ const Checkout = () => {
                       onChange={handleChange}
                       required
                     />
+                    <Form.Check
+                      type="radio"
+                      label="Paystack Online Payment"
+                      name="payment"
+                      value="Paystack Online Payment"
+                      onChange={handleChange}
+                      required
+                    />
                   </div>
                 </Form.Group>
 
                 <Button variant="dark" type="submit" className="w-100 mt-3">
-                  Place Order
+                  {form.payment === "Paystack Online Payment"
+                    ? "Pay with Paystack"
+                    : "Place Order"}
                 </Button>
               </Form>
 
               <hr />
               <h5 className="text-end">
-                Total: ₦{calculateTotal().toLocaleString()}
+                Total: ₦{totalAmount.toLocaleString()}
               </h5>
             </Card.Body>
           </Card>
