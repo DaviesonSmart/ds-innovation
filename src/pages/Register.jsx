@@ -5,8 +5,8 @@ import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { toast } from "react-toastify";
 import { createUserWithEmailAndPassword } from "firebase/auth";
-import { auth } from "../firebaseHelpers"; // or wherever your firebase is
-
+import { auth, db } from "../firebaseHelpers"; // make sure db is exported
+import { doc, setDoc } from "firebase/firestore";
 import { collection, addDoc, getDocs, query, where } from "firebase/firestore";
 
 export default function Register() {
@@ -15,22 +15,35 @@ export default function Register() {
   const [password, setPassword] = useState("");
   const navigate = useNavigate();
 
-  const handleRegister = async (e) => {
-    e.preventDefault();
-    try {
-      const userCredential = await createUserWithEmailAndPassword(
-        auth,
-        email,
-        password
-      );
-      console.log("Registered user:", userCredential.user);
-      toast.success("Registration successful!");
-      navigate("/login");
-    } catch (error) {
-      console.error("Registration error:", error);
-      toast.error(error.message);
-    }
-  };
+const handleRegister = async (e) => {
+  e.preventDefault();
+
+  try {
+    // Create user in Firebase Auth
+    const userCredential = await createUserWithEmailAndPassword(
+      auth,
+      email,
+      password
+    );
+    const user = userCredential.user;
+
+    // Create Firestore document for user
+    await setDoc(doc(db, "users", user.uid), {
+      uid: user.uid,
+      name: name, // ✅ include full name
+      email: user.email,
+      role: "user", // default role
+      createdAt: new Date(),
+    });
+
+    toast.success("Registration successful 🎉 Please log in.");
+    navigate("/login");
+  } catch (error) {
+    toast.error("Registration failed: " + error.message);
+    console.error("Register error:", error);
+  }
+};
+
 
   return (
     <Container className="py-5">
