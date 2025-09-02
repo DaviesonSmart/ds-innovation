@@ -34,3 +34,128 @@
     border: none;
     padding: 0.5rem 1rem;
 }
+
+/* Offcanvas styling */
+.offcanvas {
+    background: linear-gradient(180deg, #ffffff, #f8f9fa);
+    border-right: 1px solid #e6e6e6;
+    box-shadow: 2px 0 15px rgba(0, 0, 0, 0.05);
+}
+
+/* Title/Header */
+.offcanvas-header {
+    background: #fff;
+    border-bottom: 1px solid #e6e6e6;
+}
+
+.offcanvas-title {
+    font-weight: 700;
+    font-size: 1.2rem;
+    color: #0d6efd;
+    /* Bootstrap primary blue */
+}
+
+/* Nav links */
+.offcanvas .nav-link {
+    font-size: 0.95rem;
+    font-weight: 500;
+    padding: 10px 14px;
+    border-radius: 6px;
+    transition: all 0.2s ease;
+    color: #333 !important;
+}
+
+.offcanvas .nav-link:hover,
+.offcanvas .nav-link.active {
+    background: #e7f1ff;
+    color: #0d6efd !important;
+}
+
+/* Dropdown inside offcanvas */
+.offcanvas .dropdown-menu {
+    border-radius: 6px;
+    box-shadow: 0 5px 10px rgba(0, 0, 0, 0.05);
+}
+
+/* Badges for cart & wishlist */
+.offcanvas .badge {
+    font-size: 0.75rem;
+    padding: 4px 7px;
+    border-radius: 12px;
+}
+
+/* User section */
+.offcanvas .fw-semibold {
+    font-size: 0.9rem;
+    color: #555;
+}
+
+/* Logout button */
+.offcanvas button {
+    border-radius: 8px;
+    transition: all 0.2s ease;
+}
+
+.offcanvas button:hover {
+    background: #0d6efd;
+    color: #fff;
+    border-color: #0d6efd;
+}
+.custom-offcanvas {
+    font-family: 'Poppins', sans-serif;
+    background: #fdfdfd;
+    border-right: 2px solid #eee;
+    box-shadow: 2px 0 15px rgba(0, 0, 0, 0.08);
+}
+
+.text-gradient {
+    background: linear-gradient(90deg, #007bff, #6f42c1);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.menu-link {
+    font-size: 1.05rem;
+    font-weight: 500;
+    color: #333 !important;
+    border-radius: 8px;
+    padding: 10px 12px;
+    transition: all 0.3s ease;
+}
+
+.menu-link:hover {
+    background: rgba(0, 123, 255, 0.08);
+    color: #007bff !important;
+}
+
+.badge-custom {
+    font-size: 0.75rem;
+    position: absolute;
+    right: 10px;
+    top: 8px;
+}
+/* 🔍 Responsive search bar */
+.custom-navbar .form-control {
+    min-width: 220px;
+    max-width: 600px;
+    flex-grow: 1;
+    border-radius: 50px;
+    border: none;
+    padding: 0.5rem 1rem;
+}
+
+.navbar .form-control {
+    min-width: 200px;
+    /* small devices */
+    width: 100%;
+    /* let it grow inside col */
+    max-width: 500px;
+    /* large monitors */
+}
+
+@media (min-width: 1400px) {
+    .custom-navbar .form-control {
+        min-width: 300px;
+        max-width: 800px;
+    }
+}
