@@ -1,9 +1,19 @@
 import React, { useState } from "react";
-import { Form, Button, Card, Container, Row, Col } from "react-bootstrap";
+import {
+  Form,
+  Button,
+  Card,
+  Container,
+  Row,
+  Col,
+  ProgressBar,
+} from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
 import AdminLayout from "../layouts/AdminLayout";
 import { toast } from "react-toastify";
-import { fetchProducts } from "../firebaseHelpers"; // or "./firebase" depending on location
+import { db } from "../firebaseHelpers";
+import { addDoc, collection, serverTimestamp } from "firebase/firestore";
+import axios from "axios";
 
 export default function AddProduct() {
   const [form, setForm] = useState({
@@ -11,9 +21,9 @@ export default function AddProduct() {
     price: "",
     category: "",
     description: "",
-    image: "",
   });
-
+  const [imageFile, setImageFile] = useState(null);
+  const [uploadProgress, setUploadProgress] = useState(0);
   const navigate = useNavigate();
 
   const handleChange = (e) => {
@@ -23,31 +33,70 @@ export default function AddProduct() {
     }));
   };
 
+  const handleFileChange = (e) => {
+    setImageFile(e.target.files[0]);
+  };
+
+const uploadToCloudinary = async () => {
+  if (!imageFile) return null;
+
+  const data = new FormData();
+  data.append("file", imageFile);
+  data.append("upload_preset", "smart_preset"); // must match your Cloudinary unsigned preset name
+
+  try {
+    const res = await axios.post(
+      "https://api.cloudinary.com/v1_1/dyrvraklf/image/upload",
+      data,
+      {
+        onUploadProgress: (progressEvent) => {
+          const progress = Math.round(
+            (progressEvent.loaded * 100) / progressEvent.total
+          );
+          setUploadProgress(progress);
+        },
+      }
+    );
+    return res.data.secure_url;
+  } catch (err) {
+    console.error(
+      "Cloudinary Upload Error:",
+      err.response?.data || err.message
+    );
+    toast.error("❌ Image upload failed");
+    return null;
+  }
+};
+
+
   const handleSubmit = async (e) => {
     e.preventDefault();
+    const { name, price, category, description } = form;
 
-    const { name, price, category, description, image } = form;
-
-    if (!name || !price || !category || !description || !image) {
+    if (!name || !price || !category || !description || !imageFile) {
       toast.error("Please fill in all fields");
       return;
     }
 
-    const newProduct = {
-      name,
-      price: parseFloat(price),
-      category,
-      description,
-      image,
-      createdAt: new Date(),
-    };
-
     try {
-      await addProductToFirebase(newProduct);
-      toast.success("🎉 Product added to Firebase!");
+      // 🔼 Upload image to Cloudinary
+      const imageUrl = await uploadToCloudinary();
+      if (!imageUrl) return;
+
+      // ✅ Save product in Firestore
+      await addDoc(collection(db, "products"), {
+        name,
+        price: parseFloat(price),
+        category,
+        description,
+        image: imageUrl,
+        createdAt: serverTimestamp(),
+      });
+
+      toast.success("🎉 Product added successfully!");
       navigate("/admin/products");
     } catch (error) {
-      console.error("Firebase Add Error:", error);
+      console.error("Firestore Add Error:", error);
       toast.error("❌ Failed to add product");
     }
   };
@@ -97,16 +146,22 @@ export default function AddProduct() {
                 </Form.Group>
 
                 <Form.Group className="mb-3">
-                  <Form.Label>Image URL</Form.Label>
+                  <Form.Label>Upload Product Image</Form.Label>
                   <Form.Control
-                    type="text"
-                    name="image"
-                    value={form.image}
-                    onChange={handleChange}
-                    placeholder="https://your-image-url.jpg"
+                    type="file"
+                    accept="image/*"
+                    onChange={handleFileChange}
                     required
                   />
                 </Form.Group>
+
+                {uploadProgress > 0 && (
+                  <ProgressBar
+                    now={uploadProgress}
+                    label={`${uploadProgress}%`}
+                    className="mb-3"
+                  />
+                )}
 
                 <Form.Group className="mb-3">
                   <Form.Label>Description</Form.Label>

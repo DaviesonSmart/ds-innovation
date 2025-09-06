@@ -10,13 +10,14 @@ import {
   browserLocalPersistence,
 } from "firebase/auth";
 import { getFirestore, collection, addDoc, getDocs } from "firebase/firestore";
+import { getStorage } from "firebase/storage"; // ✅ Import storage
 
 // Firebase config
 const firebaseConfig = {
   apiKey: "AIzaSyDyyDkEXTqEUIhNgl6LFBkw7UaIleEzhn8",
   authDomain: "smarttech-collections.firebaseapp.com",
   projectId: "smarttech-collections",
-  storageBucket: "smarttech-collections.firebasestorage.app",
+  storageBucket: "smarttech-collections.appspot.com", // ✅ FIXED
   messagingSenderId: "593838965502",
   appId: "1:593838965502:web:5cb0295b010e0e6901dbaf",
 };
@@ -25,13 +26,14 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
+const storage = getStorage(app); // ✅ Initialize storage
 
 // ✅ Set persistence for session storage (or local storage)
 setPersistence(auth, browserLocalPersistence).catch((error) => {
   console.error("Persistence error:", error);
 });
 
-export { auth, db };
+export { auth, db, storage }; // ✅ Export storage
 
 // Auth Helpers
 export const registerUser = (email, password) => {
