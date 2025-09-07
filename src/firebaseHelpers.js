@@ -10,32 +10,30 @@ import {
   browserLocalPersistence,
 } from "firebase/auth";
 import { getFirestore, collection, addDoc, getDocs } from "firebase/firestore";
-import { getStorage } from "firebase/storage"; // ✅ Import storage
 
-// Firebase config
+// ✅ Firebase config
 const firebaseConfig = {
   apiKey: "AIzaSyDyyDkEXTqEUIhNgl6LFBkw7UaIleEzhn8",
   authDomain: "smarttech-collections.firebaseapp.com",
   projectId: "smarttech-collections",
-  storageBucket: "smarttech-collections.appspot.com", // ✅ FIXED
+  storageBucket: "smarttech-collections.appspot.com", // stays in config but unused now
   messagingSenderId: "593838965502",
   appId: "1:593838965502:web:5cb0295b010e0e6901dbaf",
 };
 
-// Initialize Firebase
+// ✅ Initialize Firebase
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
-const storage = getStorage(app); // ✅ Initialize storage
 
-// ✅ Set persistence for session storage (or local storage)
+// ✅ Set persistence for local storage
 setPersistence(auth, browserLocalPersistence).catch((error) => {
   console.error("Persistence error:", error);
 });
 
-export { auth, db, storage }; // ✅ Export storage
+export { auth, db };
 
-// Auth Helpers
+// ----------------- AUTH HELPERS -----------------
 export const registerUser = (email, password) => {
   return createUserWithEmailAndPassword(auth, email, password);
 };
@@ -52,7 +50,7 @@ export const resetPassword = (email) => {
   return sendPasswordResetEmail(auth, email);
 };
 
-// Product Helpers
+// ----------------- PRODUCT HELPERS -----------------
 export const addProductToDB = async (productData) => {
   const docRef = await addDoc(collection(db, "products"), productData);
   return docRef.id;

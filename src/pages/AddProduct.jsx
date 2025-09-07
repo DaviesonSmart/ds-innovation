@@ -1,3 +1,4 @@
+// src/pages/AddProduct.jsx
 import React, { useState } from "react";
 import {
   Form,
@@ -22,8 +23,8 @@ export default function AddProduct() {
     category: "",
     description: "",
   });
-  const [imageFile, setImageFile] = useState(null);
-  const [uploadProgress, setUploadProgress] = useState(0);
+  const [imageFiles, setImageFiles] = useState([]); // multiple images
+  const [uploadProgress, setUploadProgress] = useState({});
   const navigate = useNavigate();
 
   const handleChange = (e) => {
@@ -34,62 +35,72 @@ export default function AddProduct() {
   };
 
   const handleFileChange = (e) => {
-    setImageFile(e.target.files[0]);
+    setImageFiles(Array.from(e.target.files)); // FileList → Array
   };
 
-const uploadToCloudinary = async () => {
-  if (!imageFile) return null;
+  // Upload a single file to Cloudinary
+  const uploadToCloudinary = async (file, index) => {
+    const data = new FormData();
+    data.append("file", file);
+    data.append("upload_preset", "smart_preset");
 
-  const data = new FormData();
-  data.append("file", imageFile);
-  data.append("upload_preset", "smart_preset"); // must match your Cloudinary unsigned preset name
-
-  try {
-    const res = await axios.post(
-      "https://api.cloudinary.com/v1_1/dyrvraklf/image/upload",
-      data,
-      {
-        onUploadProgress: (progressEvent) => {
-          const progress = Math.round(
-            (progressEvent.loaded * 100) / progressEvent.total
-          );
-          setUploadProgress(progress);
-        },
-      }
-    );
-    return res.data.secure_url;
-  } catch (err) {
-    console.error(
-      "Cloudinary Upload Error:",
-      err.response?.data || err.message
-    );
-    toast.error("❌ Image upload failed");
-    return null;
-  }
-};
-
+    try {
+      const res = await axios.post(
+        "https://api.cloudinary.com/v1_1/dyrvraklf/image/upload",
+        data,
+        {
+          onUploadProgress: (progressEvent) => {
+            const progress = Math.round(
+              (progressEvent.loaded * 100) / progressEvent.total
+            );
+            setUploadProgress((prev) => ({
+              ...prev,
+              [index]: progress,
+            }));
+          },
+        }
+      );
+      return res.data.secure_url;
+    } catch (err) {
+      console.error(
+        "Cloudinary Upload Error:",
+        err.response?.data || err.message
+      );
+      toast.error(`❌ Failed to upload ${file.name}`);
+      return null;
+    }
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     const { name, price, category, description } = form;
 
-    if (!name || !price || !category || !description || !imageFile) {
-      toast.error("Please fill in all fields");
+    if (!name || !price || !category || !description || !imageFiles.length) {
+      toast.error("Please fill in all fields and upload images");
       return;
     }
 
     try {
-      // 🔼 Upload image to Cloudinary
-      const imageUrl = await uploadToCloudinary();
-      if (!imageUrl) return;
+      // Upload all images
+      const uploadedUrls = await Promise.all(
+        imageFiles.map((file, i) => uploadToCloudinary(file, i))
+      );
 
-      // ✅ Save product in Firestore
+      // Filter out any nulls (failed uploads)
+      const imageUrls = uploadedUrls.filter(Boolean);
+
+      if (!imageUrls.length) {
+        toast.error("❌ No images uploaded");
+        return;
+      }
+
+      // Save product in Firestore
       await addDoc(collection(db, "products"), {
         name,
         price: parseFloat(price),
         category,
         description,
-        image: imageUrl,
+        images: imageUrls, // clean array of URLs
         createdAt: serverTimestamp(),
       });
 
@@ -146,22 +157,26 @@ const uploadToCloudinary = async () => {
                 </Form.Group>
 
                 <Form.Group className="mb-3">
-                  <Form.Label>Upload Product Image</Form.Label>
+                  <Form.Label>Upload Product Images</Form.Label>
                   <Form.Control
                     type="file"
                     accept="image/*"
+                    multiple
                     onChange={handleFileChange}
                     required
                   />
                 </Form.Group>
 
-                {uploadProgress > 0 && (
-                  <ProgressBar
-                    now={uploadProgress}
-                    label={`${uploadProgress}%`}
-                    className="mb-3"
-                  />
-                )}
+                {/* Show progress for each file */}
+                {imageFiles.map((file, i) => (
+                  <div key={i} className="mb-2">
+                    <small>{file.name}</small>
+                    <ProgressBar
+                      now={uploadProgress[i] || 0}
+                      label={`${uploadProgress[i] || 0}%`}
+                    />
+                  </div>
+                ))}
 
                 <Form.Group className="mb-3">
                   <Form.Label>Description</Form.Label>

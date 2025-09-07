@@ -1,8 +1,10 @@
+// src/pages/ProductDetails.jsx
 import React, { useState, useEffect, useContext } from "react";
 import { useParams, Link } from "react-router-dom";
-import { Button, Container, Row, Col, Image } from "react-bootstrap";
+import { Button, Container, Row, Col, Image, Carousel } from "react-bootstrap";
 import { motion } from "framer-motion";
 import { CartContext } from "../contexts/CartContext";
+import { fetchProducts } from "../firebaseHelpers"; // ✅ get products from Firestore
 import NavigationBar from "../components/NavigationBar";
 import Loader from "../components/LoadingSpinner";
 
@@ -14,18 +16,25 @@ export default function ProductDetails() {
   const [product, setProduct] = useState(null);
 
   useEffect(() => {
-    // simulate delay
-    setTimeout(() => {
-      const storedProducts =
-        JSON.parse(localStorage.getItem("smarttech-products")) || [];
-      const found = storedProducts.find((p) => p.id === parseInt(id));
-      setProduct(found);
-      setLoading(false);
-    }, 800);
+    const loadProduct = async () => {
+      try {
+        const products = await fetchProducts();
+        const found = products.find((p) => p.id === id); // Firestore doc.id is a string
+        setProduct(found);
+      } catch (error) {
+        console.error("Error fetching product:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadProduct();
   }, [id]);
 
   if (loading) return <Loader />;
   if (!product) return <p className="text-center py-5">Product not found</p>;
+
+  
 
   return (
     <>
@@ -38,7 +47,28 @@ export default function ProductDetails() {
               animate={{ x: 0, opacity: 1 }}
               transition={{ duration: 0.5 }}
             >
-              <Image src={product.image} alt={product.name} fluid />
+              {/* ✅ If multiple images exist, show carousel */}
+              {Array.isArray(product.images) && product.images.length > 1 ? (
+                <Carousel>
+                  {product.images.map((img, idx) => (
+                    <Carousel.Item key={idx}>
+                      <Image
+                        src={img}
+                        alt={`${product.name} ${idx + 1}`}
+                        fluid
+                        className="rounded"
+                      />
+                    </Carousel.Item>
+                  ))}
+                </Carousel>
+              ) : (
+                <Image
+                  src={product.image || product.images?.[0]}
+                  alt={product.name}
+                  fluid
+                  className="rounded"
+                />
+              )}
             </motion.div>
           </Col>
           <Col md={6}>
@@ -49,7 +79,7 @@ export default function ProductDetails() {
             >
               <h2>{product.name}</h2>
               <p>{product.description || "No description available."}</p>
-              <h4>₦{product.price?.toLocaleString()}</h4>
+              <h4>₦{Number(product.price || 0).toLocaleString()}</h4>
               <Button
                 variant="dark"
                 className="me-2"
