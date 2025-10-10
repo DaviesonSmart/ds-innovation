@@ -23,7 +23,7 @@ export default function Home() {
 
       {/* Main homepage sections */}
       <Hero />
-      <ProductList />
+      <ProductList enableNavigation={true} />
       <Testimonials />
       <Newsletter />
     </>

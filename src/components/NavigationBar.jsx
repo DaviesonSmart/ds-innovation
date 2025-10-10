@@ -1,4 +1,4 @@
-import React, { useContext, useState } from "react";
+import React, { useContext, useState, useEffect } from "react";
 import {
   Navbar,
   Nav,
@@ -24,21 +24,22 @@ import {
   FaSignOutAlt,
   FaUserCog,
 } from "react-icons/fa";
-
 import { motion, AnimatePresence } from "framer-motion";
 import { CartContext } from "../contexts/CartContext";
 import { WishlistContext } from "../contexts/WishlistContext";
 import { useAuth } from "../contexts/AuthContext";
 import { signOut } from "firebase/auth";
-import { auth } from "../firebaseHelpers";
+import { auth, db } from "../firebaseHelpers";
+import { collection, getDocs } from "firebase/firestore";
 
 export default function NavigationBar() {
   const navigate = useNavigate();
   const { cartItems = [] } = useContext(CartContext);
   const { wishlistItems = [] } = useContext(WishlistContext);
   const { user, loading } = useAuth();
-
   const [show, setShow] = useState(false);
+  const [categories, setCategories] = useState([]);
+
   const toggleOffcanvas = () => setShow(!show);
 
   const handleLogout = async () => {
@@ -49,6 +50,20 @@ export default function NavigationBar() {
       console.error("Logout error:", error);
     }
   };
+
+  // ✅ Fetch categories dynamically from Firestore
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const querySnapshot = await getDocs(collection(db, "categories"));
+        const fetchedCategories = querySnapshot.docs.map((doc) => doc.id);
+        setCategories(fetchedCategories);
+      } catch (error) {
+        console.error("Error fetching categories:", error);
+      }
+    };
+    fetchCategories();
+  }, []);
 
   const isAdmin = user?.role === "admin";
   if (loading) return null;
@@ -72,7 +87,7 @@ export default function NavigationBar() {
               Smart<span className="text-primary">Tech</span> 👗
             </Navbar.Brand>
 
-            {/* ✅ Mobile Search Bar (always visible) */}
+            {/* ✅ Mobile Search Bar */}
             <AnimatePresence>
               <motion.div
                 className="d-lg-none flex-grow-1 mx-2"
@@ -94,7 +109,7 @@ export default function NavigationBar() {
               </motion.div>
             </AnimatePresence>
 
-            {/* Mobile Toggle Button */}
+            {/* ✅ Mobile Toggle */}
             <Button
               variant="outline-light"
               className="d-lg-none ms-2"
@@ -103,30 +118,35 @@ export default function NavigationBar() {
               <FaBars />
             </Button>
 
-            {/* Desktop Menu */}
+            {/* ✅ Desktop Menu */}
             <Navbar.Collapse className="justify-content-between d-none d-lg-flex">
               <Nav className="me-auto">
                 <Nav.Link as={NavLink} to="/" end>
                   Home
                 </Nav.Link>
+
                 <NavDropdown title="Shop" id="shop-dropdown">
                   <NavDropdown.Item as={NavLink} to="/shop">
                     All Products
                   </NavDropdown.Item>
                   <NavDropdown.Divider />
-                  <NavDropdown.Item as={NavLink} to="/shop/gowns">
-                    Gowns
-                  </NavDropdown.Item>
-                  <NavDropdown.Item as={NavLink} to="/shop/skirts">
-                    Skirts
-                  </NavDropdown.Item>
-                  <NavDropdown.Item as={NavLink} to="/shop/tops">
-                    Tops
-                  </NavDropdown.Item>
-                  <NavDropdown.Item as={NavLink} to="/shop/joggers">
-                    Joggers
-                  </NavDropdown.Item>
+
+                  {/* 🔥 Dynamic Categories */}
+                  {categories.length > 0 ? (
+                    categories.map((category) => (
+                      <NavDropdown.Item
+                        key={category}
+                        as={NavLink}
+                        to={`/shop?category=${encodeURIComponent(category)}`}
+                      >
+                        {category}
+                      </NavDropdown.Item>
+                    ))
+                  ) : (
+                    <NavDropdown.Item disabled>No categories</NavDropdown.Item>
+                  )}
                 </NavDropdown>
+
                 <Nav.Link as={NavLink} to="/about">
                   About
                 </Nav.Link>
@@ -135,7 +155,7 @@ export default function NavigationBar() {
                 </Nav.Link>
               </Nav>
 
-              {/* ✅ Desktop Search Bar */}
+              {/* ✅ Desktop Search */}
               <Form
                 className="d-flex mx-auto my-2 my-lg-0"
                 style={{ flexGrow: 1, minWidth: "220px", maxWidth: "600px" }}
@@ -150,7 +170,7 @@ export default function NavigationBar() {
                 </Button>
               </Form>
 
-              {/* Right Side Icons / Auth */}
+              {/* ✅ Right Icons + Auth */}
               <Nav className="align-items-center">
                 <Nav.Link as={NavLink} to="/cart" className="position-relative">
                   <FaShoppingCart size={22} />
@@ -164,6 +184,7 @@ export default function NavigationBar() {
                     </Badge>
                   )}
                 </Nav.Link>
+
                 <Nav.Link
                   as={NavLink}
                   to="/wishlist"
@@ -180,6 +201,7 @@ export default function NavigationBar() {
                     </Badge>
                   )}
                 </Nav.Link>
+
                 {user ? (
                   <>
                     <span className="text-light px-2">
@@ -218,7 +240,7 @@ export default function NavigationBar() {
         </Navbar>
       </motion.nav>
 
-      {/* ✅ Mobile Offcanvas */}
+      {/* ✅ Mobile Offcanvas (Framer Motion kept intact) */}
       <Offcanvas
         show={show}
         onHide={toggleOffcanvas}
@@ -230,7 +252,6 @@ export default function NavigationBar() {
             SmartTech ✨
           </Offcanvas.Title>
         </Offcanvas.Header>
-
         <Offcanvas.Body>
           <motion.div
             initial={{ opacity: 0, x: -50 }}
@@ -238,7 +259,7 @@ export default function NavigationBar() {
             transition={{ duration: 0.5 }}
             className="d-flex flex-column gap-3"
           >
-            {/* ✅ Mobile Search Bar */}
+            {/* ✅ Mobile Search */}
             <Form className="d-flex mb-3">
               <Form.Control
                 type="search"
@@ -250,28 +271,32 @@ export default function NavigationBar() {
               </Button>
             </Form>
 
-            {/* ✅ Offcanvas Links */}
+            {/* ✅ Offcanvas Links with Framer Motion */}
             <Nav className="flex-column">
               <motion.div whileHover={{ scale: 1.05, x: 5 }}>
                 <Nav.Link as={NavLink} to="/" onClick={toggleOffcanvas}>
                   <FaHome /> Home
                 </Nav.Link>
               </motion.div>
+
               <motion.div whileHover={{ scale: 1.05, x: 5 }}>
                 <Nav.Link as={NavLink} to="/shop" onClick={toggleOffcanvas}>
                   <FaShoppingBag /> Shop
                 </Nav.Link>
               </motion.div>
+
               <motion.div whileHover={{ scale: 1.05, x: 5 }}>
                 <Nav.Link as={NavLink} to="/about" onClick={toggleOffcanvas}>
                   <FaInfoCircle /> About
                 </Nav.Link>
               </motion.div>
+
               <motion.div whileHover={{ scale: 1.05, x: 5 }}>
                 <Nav.Link as={NavLink} to="/contact" onClick={toggleOffcanvas}>
                   <FaEnvelope /> Contact
                 </Nav.Link>
               </motion.div>
+
               <motion.div whileHover={{ scale: 1.05, x: 5 }}>
                 <Nav.Link
                   as={NavLink}
@@ -287,6 +312,7 @@ export default function NavigationBar() {
                   )}
                 </Nav.Link>
               </motion.div>
+
               <motion.div whileHover={{ scale: 1.05, x: 5 }}>
                 <Nav.Link
                   as={NavLink}

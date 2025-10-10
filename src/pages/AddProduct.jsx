@@ -146,14 +146,22 @@ export default function AddProduct() {
 
                 <Form.Group className="mb-3">
                   <Form.Label>Category</Form.Label>
-                  <Form.Control
-                    type="text"
+                  <Form.Select
                     name="category"
                     value={form.category}
                     onChange={handleChange}
-                    placeholder="e.g. Gowns, Leggings, Crop Tops"
                     required
-                  />
+                  >
+                    <option value="">-- Select Category --</option>
+                    <option value="Dresses">Gowns</option>
+                    <option value="Tops">Two Piece Sets</option>
+                    <option value="Bottoms">Tops & Blouses</option>
+                    <option value="Two-Piece">Skirts</option>
+                    <option value="Outerwear">Jumpsuits</option>
+                    <option value="Outerwear">Jeans</option>
+                    <option value="Outerwear">Shorts</option>
+                    <option value="Outerwear">Crop Tops</option>
+                  </Form.Select>
                 </Form.Group>
 
                 <Form.Group className="mb-3">

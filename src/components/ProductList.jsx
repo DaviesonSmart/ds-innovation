@@ -1,8 +1,10 @@
-import React, { useState, useMemo, useEffect } from "react";
+// src/components/ProductList.jsx
+import React, { useState, useEffect, useMemo } from "react";
 import ProductCard from "./ProductCard";
 import { Container, Row, Col, Button, Spinner } from "react-bootstrap";
 import { motion } from "framer-motion";
-import { fetchProducts } from "../firebaseHelpers"; // or "./firebase" depending on location
+import { fetchProducts } from "../firebaseHelpers";
+import { useNavigate } from "react-router-dom"; // ✅ for navigation
 
 // Price ranges
 const priceRanges = [
@@ -12,11 +14,12 @@ const priceRanges = [
   { label: "Above ₦12,000", min: 12001, max: Infinity },
 ];
 
-export default function ProductList() {
+export default function ProductList({ enableNavigation = false }) {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedCategory, setSelectedCategory] = useState("All");
   const [selectedPriceRange, setSelectedPriceRange] = useState("All");
+  const navigate = useNavigate();
 
   useEffect(() => {
     const loadProducts = async () => {
@@ -24,29 +27,27 @@ export default function ProductList() {
       setProducts(data);
       setLoading(false);
     };
-
     loadProducts();
   }, []);
-  
-  // Extract unique categories
+
+  // ✅ Extract categories dynamically from Firestore products
   const categories = useMemo(() => {
-    const cats = products.map((p) => p.category);
-    return ["All", ...new Set(cats)];
+    if (!products.length) return ["All"];
+    const cats = products.map((p) => p.category?.trim()).filter(Boolean);
+    return ["All", ...Array.from(new Set(cats))];
   }, [products]);
 
-  // Filtered products
+  // ✅ Filtered products
   const filteredProducts = useMemo(() => {
     return products.filter((p) => {
-      const category = (p?.category || "").toString().trim().toLowerCase();
+      const productCategory = (p.category || "").trim();
       const inCategory =
-        selectedCategory === "All" ||
-        category === selectedCategory.toLowerCase();
+        selectedCategory === "All" || productCategory === selectedCategory;
 
       const priceRange = priceRanges.find(
         (range) => range.label === selectedPriceRange
       );
-
-      const price = Number(p?.price) || 0;
+      const price = Number(p.price) || 0;
       const inPrice =
         selectedPriceRange === "All" ||
         (price >= priceRange.min && price <= priceRange.max);
@@ -72,7 +73,15 @@ export default function ProductList() {
               <Button
                 key={cat}
                 variant={selectedCategory === cat ? "dark" : "outline-dark"}
-                onClick={() => setSelectedCategory(cat)}
+                onClick={() => {
+                  if (enableNavigation && cat !== "All") {
+                    // ✅ Redirect to Shop page with query
+                    navigate(`/shop?category=${encodeURIComponent(cat)}`);
+                  } else {
+                    // Local filter (used when already on Shop page)
+                    setSelectedCategory(cat);
+                  }
+                }}
                 className="rounded-pill text-capitalize"
               >
                 {cat}
@@ -81,22 +90,24 @@ export default function ProductList() {
           </div>
 
           {/* Price Filter */}
-          <div className="d-flex justify-content-center mb-4 flex-wrap gap-2">
-            {priceRanges.map((range) => (
-              <Button
-                key={range.label}
-                variant={
-                  selectedPriceRange === range.label
-                    ? "primary"
-                    : "outline-primary"
-                }
-                onClick={() => setSelectedPriceRange(range.label)}
-                className="rounded-pill"
-              >
-                {range.label}
-              </Button>
-            ))}
-          </div>
+          {!enableNavigation && (
+            <div className="d-flex justify-content-center mb-4 flex-wrap gap-2">
+              {priceRanges.map((range) => (
+                <Button
+                  key={range.label}
+                  variant={
+                    selectedPriceRange === range.label
+                      ? "primary"
+                      : "outline-primary"
+                  }
+                  onClick={() => setSelectedPriceRange(range.label)}
+                  className="rounded-pill"
+                >
+                  {range.label}
+                </Button>
+              ))}
+            </div>
+          )}
 
           {/* Product Grid */}
           <Row className="gx-4 gy-4">

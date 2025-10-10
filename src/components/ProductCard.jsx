@@ -35,7 +35,11 @@ export default function ProductCard({ product }) {
           variant="top"
           src={product.image || product.images?.[0]}
           alt={product.name || "Product"}
-          style={{ height: "250px", objectFit: "cover" }}
+          style={{
+            aspectRatio: "4 / 5", // typical fashion product ratio
+            objectFit: "cover",
+            width: "100%",
+          }}
           onError={(e) => {
             e.target.onerror = null;
             e.target.src = "/images/fallback.jpg";
