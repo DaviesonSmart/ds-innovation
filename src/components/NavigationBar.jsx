@@ -33,13 +33,14 @@ import { auth, db } from "../firebaseHelpers";
 import { collection, getDocs } from "firebase/firestore";
 
 export default function NavigationBar() {
-  const navigate = useNavigate();
   const { cartItems = [] } = useContext(CartContext);
   const { wishlistItems = [] } = useContext(WishlistContext);
   const { user, loading } = useAuth();
+  const navigate = useNavigate();
+
   const [show, setShow] = useState(false);
   const [categories, setCategories] = useState([]);
-
+  const [searchTerm, setSearchTerm] = useState(""); // ✅ unified search
   const toggleOffcanvas = () => setShow(!show);
 
   const handleLogout = async () => {
@@ -51,13 +52,33 @@ export default function NavigationBar() {
     }
   };
 
+  // ✅ Handle search for all (desktop, mobile, offcanvas)
+  const handleSearch = (e) => {
+    e.preventDefault();
+    const trimmed = searchTerm.trim();
+    if (trimmed) {
+      navigate(`/shop?search=${encodeURIComponent(trimmed)}`);
+      setShow(false); // close offcanvas if open
+      setSearchTerm("");
+    } else {
+      navigate("/shop");
+    }
+  };
+
   // ✅ Fetch categories dynamically from Firestore
   useEffect(() => {
     const fetchCategories = async () => {
       try {
-        const querySnapshot = await getDocs(collection(db, "categories"));
-        const fetchedCategories = querySnapshot.docs.map((doc) => doc.id);
-        setCategories(fetchedCategories);
+        const querySnapshot = await getDocs(collection(db, "products"));
+        const productData = querySnapshot.docs.map((doc) => doc.data());
+        const uniqueCategories = [
+          ...new Set(
+            productData
+              .map((p) => p.category?.trim())
+              .filter((c) => c && c !== "")
+          ),
+        ];
+        setCategories(uniqueCategories);
       } catch (error) {
         console.error("Error fetching categories:", error);
       }
@@ -96,13 +117,15 @@ export default function NavigationBar() {
                 exit={{ opacity: 0, y: -15 }}
                 transition={{ duration: 0.4 }}
               >
-                <Form className="d-flex">
+                <Form className="d-flex" onSubmit={handleSearch}>
                   <Form.Control
                     type="search"
-                    placeholder="Search..."
-                    className="me-2 rounded-pill"
+                    placeholder="Search products..."
+                    className="me-2"
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
                   />
-                  <Button variant="outline-light" className="rounded-pill px-3">
+                  <Button type="submit" variant="outline-light">
                     <FaSearch />
                   </Button>
                 </Form>
@@ -130,8 +153,6 @@ export default function NavigationBar() {
                     All Products
                   </NavDropdown.Item>
                   <NavDropdown.Divider />
-
-                  {/* 🔥 Dynamic Categories */}
                   {categories.length > 0 ? (
                     categories.map((category) => (
                       <NavDropdown.Item
@@ -159,13 +180,19 @@ export default function NavigationBar() {
               <Form
                 className="d-flex mx-auto my-2 my-lg-0"
                 style={{ flexGrow: 1, minWidth: "220px", maxWidth: "600px" }}
+                onSubmit={handleSearch}
               >
                 <Form.Control
                   type="search"
-                  placeholder="Search..."
-                  className="me-2 rounded-pill"
+                  placeholder="Search products..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
                 />
-                <Button variant="outline-light" className="rounded-pill px-3">
+                <Button
+                  type="submit"
+                  variant="outline-light"
+                  className="rounded-pill px-3"
+                >
                   <FaSearch />
                 </Button>
               </Form>
@@ -240,7 +267,7 @@ export default function NavigationBar() {
         </Navbar>
       </motion.nav>
 
-      {/* ✅ Mobile Offcanvas (Framer Motion kept intact) */}
+      {/* ✅ Mobile Offcanvas */}
       <Offcanvas
         show={show}
         onHide={toggleOffcanvas}
@@ -252,6 +279,7 @@ export default function NavigationBar() {
             SmartTech ✨
           </Offcanvas.Title>
         </Offcanvas.Header>
+
         <Offcanvas.Body>
           <motion.div
             initial={{ opacity: 0, x: -50 }}
@@ -259,19 +287,25 @@ export default function NavigationBar() {
             transition={{ duration: 0.5 }}
             className="d-flex flex-column gap-3"
           >
-            {/* ✅ Mobile Search */}
-            <Form className="d-flex mb-3">
+            {/* ✅ Unified Search in Offcanvas */}
+            <Form className="d-flex mb-3" onSubmit={handleSearch}>
               <Form.Control
                 type="search"
                 placeholder="Search..."
                 className="me-2 flex-grow-1"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
               />
-              <Button variant="outline-dark" className="rounded-pill px-3">
+              <Button
+                type="submit"
+                variant="outline-dark"
+                className="rounded-pill px-3"
+              >
                 <FaSearch />
               </Button>
             </Form>
 
-            {/* ✅ Offcanvas Links with Framer Motion */}
+            {/* ✅ Offcanvas Links */}
             <Nav className="flex-column">
               <motion.div whileHover={{ scale: 1.05, x: 5 }}>
                 <Nav.Link as={NavLink} to="/" onClick={toggleOffcanvas}>
@@ -279,24 +313,68 @@ export default function NavigationBar() {
                 </Nav.Link>
               </motion.div>
 
+              {/* 🛍️ Shop Dropdown */}
               <motion.div whileHover={{ scale: 1.05, x: 5 }}>
-                <Nav.Link as={NavLink} to="/shop" onClick={toggleOffcanvas}>
-                  <FaShoppingBag /> Shop
-                </Nav.Link>
+                <div className="dropdown w-100">
+                  <button
+                    className="btn btn-outline-dark w-100 dropdown-toggle text-start"
+                    type="button"
+                    data-bs-toggle="dropdown"
+                    aria-expanded="false"
+                  >
+                    <FaShoppingBag /> Shop
+                  </button>
+                  <ul className="dropdown-menu w-100">
+                    <li>
+                      <NavLink
+                        className="dropdown-item"
+                        to="/shop"
+                        onClick={toggleOffcanvas}
+                      >
+                        All Products
+                      </NavLink>
+                    </li>
+                    <li>
+                      <hr className="dropdown-divider" />
+                    </li>
+                    {categories.length > 0 ? (
+                      categories.map((cat) => (
+                        <li key={cat}>
+                          <NavLink
+                            className="dropdown-item text-capitalize"
+                            to={`/shop?category=${encodeURIComponent(cat)}`}
+                            onClick={toggleOffcanvas}
+                          >
+                            {cat}
+                          </NavLink>
+                        </li>
+                      ))
+                    ) : (
+                      <li>
+                        <span className="dropdown-item text-muted">
+                          No categories yet
+                        </span>
+                      </li>
+                    )}
+                  </ul>
+                </div>
               </motion.div>
 
+              {/* 📖 About */}
               <motion.div whileHover={{ scale: 1.05, x: 5 }}>
                 <Nav.Link as={NavLink} to="/about" onClick={toggleOffcanvas}>
                   <FaInfoCircle /> About
                 </Nav.Link>
               </motion.div>
 
+              {/* ✉️ Contact */}
               <motion.div whileHover={{ scale: 1.05, x: 5 }}>
                 <Nav.Link as={NavLink} to="/contact" onClick={toggleOffcanvas}>
                   <FaEnvelope /> Contact
                 </Nav.Link>
               </motion.div>
 
+              {/* 🛒 Cart */}
               <motion.div whileHover={{ scale: 1.05, x: 5 }}>
                 <Nav.Link
                   as={NavLink}
@@ -313,6 +391,7 @@ export default function NavigationBar() {
                 </Nav.Link>
               </motion.div>
 
+              {/* 💖 Wishlist */}
               <motion.div whileHover={{ scale: 1.05, x: 5 }}>
                 <Nav.Link
                   as={NavLink}

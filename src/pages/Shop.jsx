@@ -2,12 +2,12 @@
 import React, { useEffect, useState, useMemo } from "react";
 import { Helmet } from "react-helmet-async";
 import { Container, Row, Col, Spinner, Button } from "react-bootstrap";
+import { motion } from "framer-motion";
 import ProductCard from "../components/ProductCard";
 import { db } from "../firebaseHelpers";
 import { collection, getDocs } from "firebase/firestore";
 import { useLocation, useNavigate } from "react-router-dom";
 
-// Price ranges (same as ProductList)
 const priceRanges = [
   { label: "All", min: 0, max: Infinity },
   { label: "Under ₦10,000", min: 0, max: 9999 },
@@ -18,52 +18,94 @@ const priceRanges = [
 export default function Shop() {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [selectedPriceRange, setSelectedPriceRange] = useState("All");
 
   const location = useLocation();
   const navigate = useNavigate();
   const queryParams = new URLSearchParams(location.search);
-  const selectedCategory = queryParams.get("category") || "All";
 
+  const selectedCategory = queryParams.get("category") || "All";
+  const selectedPriceRange = queryParams.get("price") || "All";
+  const searchQuery = queryParams.get("search")?.toLowerCase().trim() || "";
+
+  // ✅ Fetch products from Firestore
   useEffect(() => {
-    const fetchData = async () => {
+    const fetchProducts = async () => {
       try {
-        const productsRef = collection(db, "products");
-        const snapshot = await getDocs(productsRef);
-        const productList = snapshot.docs.map((doc) => ({
+        const querySnapshot = await getDocs(collection(db, "products"));
+        const productData = querySnapshot.docs.map((doc) => ({
           id: doc.id,
           ...doc.data(),
         }));
-        setProducts(productList);
+        setProducts(productData);
       } catch (error) {
-        console.error("Failed to fetch products:", error);
+        console.error("Error fetching products:", error);
       } finally {
         setLoading(false);
       }
     };
-
-    fetchData();
+    fetchProducts();
   }, []);
 
-  // ✅ Dynamic categories from Firestore
+  // ✅ Get unique categories
   const categories = useMemo(() => {
     if (!products.length) return ["All"];
-    const cats = products.map((p) => p.category?.trim()).filter(Boolean);
-    return ["All", ...Array.from(new Set(cats))];
+    const unique = [
+      ...new Set(
+        products.map((p) => p.category?.trim()).filter((c) => c && c !== "")
+      ),
+    ];
+    return ["All", ...unique];
   }, [products]);
 
-  // ✅ Filter by category if query param is present
+  // ✅ Filter products (category + price + search)
   const filteredProducts = useMemo(() => {
-    if (!selectedCategory || selectedCategory === "All") {
-      return products;
+    let filtered = [...products];
+
+    // Category
+    if (selectedCategory !== "All") {
+      filtered = filtered.filter(
+        (p) =>
+          p.category?.toLowerCase().trim() ===
+          selectedCategory.toLowerCase().trim()
+      );
     }
 
-    return products.filter(
-      (p) =>
-        p?.category?.toLowerCase().trim() ===
-        selectedCategory.toLowerCase().trim()
-    );
-  }, [products, selectedCategory]);
+    // Price
+    const priceRange = priceRanges.find((r) => r.label === selectedPriceRange);
+    if (priceRange && priceRange.label !== "All") {
+      filtered = filtered.filter((p) => {
+        const price = parseFloat(p.price || 0);
+        return price >= priceRange.min && price <= priceRange.max;
+      });
+    }
+
+    // Search
+    if (searchQuery) {
+      filtered = filtered.filter(
+        (p) =>
+          p.name?.toLowerCase().includes(searchQuery) ||
+          p.category?.toLowerCase().includes(searchQuery)
+      );
+    }
+
+    return filtered;
+  }, [products, selectedCategory, selectedPriceRange, searchQuery]);
+
+  // ✅ Handle category change
+  const handleCategoryChange = (cat) => {
+    const params = new URLSearchParams(location.search);
+    if (cat === "All") params.delete("category");
+    else params.set("category", cat);
+    navigate(`/shop?${params.toString()}`);
+  };
+
+  // ✅ Handle price change
+  const handlePriceChange = (rangeLabel) => {
+    const params = new URLSearchParams(location.search);
+    if (rangeLabel === "All") params.delete("price");
+    else params.set("price", rangeLabel);
+    navigate(`/shop?${params.toString()}`);
+  };
 
   return (
     <>
@@ -77,7 +119,9 @@ export default function Shop() {
 
       <Container className="py-5">
         <h2 className="text-center fw-bold mb-4">
-          {selectedCategory === "All"
+          {searchQuery
+            ? `Search Results for "${searchQuery}"`
+            : selectedCategory === "All"
             ? "Shop Our Female Wears"
             : `Shop ${selectedCategory}`}
         </h2>
@@ -89,45 +133,75 @@ export default function Shop() {
           </div>
         ) : (
           <>
-            {/* Category Filter */}
+            {/* 🏷 Category Filter */}
             <div className="d-flex justify-content-center mb-3 flex-wrap gap-2">
-              {categories.map((cat) => (
-                <Button
-                  key={cat}
-                  variant={selectedCategory === cat ? "dark" : "outline-dark"}
-                  onClick={() =>
-                    navigate(
-                      cat === "All"
-                        ? "/shop"
-                        : `/shop?category=${encodeURIComponent(cat)}`
-                    )
-                  }
-                  className="rounded-pill text-capitalize"
-                >
-                  {cat}
-                </Button>
-              ))}
+              {categories.map((cat) => {
+                const isActive = selectedCategory === cat;
+                return (
+                  <motion.div
+                    key={cat}
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    layout
+                  >
+                    <Button
+                      variant={isActive ? "dark" : "outline-dark"}
+                      onClick={() => handleCategoryChange(cat)}
+                      className="rounded-pill text-capitalize position-relative"
+                    >
+                      {cat}
+                      {isActive && (
+                        <motion.div
+                          layoutId="activeCategory"
+                          className="position-absolute bottom-0 start-0 end-0"
+                          style={{
+                            height: "3px",
+                            background: "#000",
+                            borderRadius: "2px",
+                          }}
+                        />
+                      )}
+                    </Button>
+                  </motion.div>
+                );
+              })}
             </div>
 
-            {/* Price Filter */}
+            {/* 💰 Price Filter */}
             <div className="d-flex justify-content-center mb-4 flex-wrap gap-2">
-              {priceRanges.map((range) => (
-                <Button
-                  key={range.label}
-                  variant={
-                    selectedPriceRange === range.label
-                      ? "primary"
-                      : "outline-primary"
-                  }
-                  onClick={() => setSelectedPriceRange(range.label)}
-                  className="rounded-pill"
-                >
-                  {range.label}
-                </Button>
-              ))}
+              {priceRanges.map((range) => {
+                const isActive = selectedPriceRange === range.label;
+                return (
+                  <motion.div
+                    key={range.label}
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    layout
+                  >
+                    <Button
+                      variant={isActive ? "primary" : "outline-primary"}
+                      onClick={() => handlePriceChange(range.label)}
+                      className="rounded-pill position-relative"
+                    >
+                      {range.label}
+                      {isActive && (
+                        <motion.div
+                          layoutId="activePrice"
+                          className="position-absolute bottom-0 start-0 end-0"
+                          style={{
+                            height: "3px",
+                            background: "#0d6efd",
+                            borderRadius: "2px",
+                          }}
+                        />
+                      )}
+                    </Button>
+                  </motion.div>
+                );
+              })}
             </div>
 
-            {/* Product Grid */}
+            {/* 🛍 Product Grid */}
             {filteredProducts.length === 0 ? (
               <p className="text-center">No products found.</p>
             ) : (

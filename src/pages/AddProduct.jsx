@@ -153,14 +153,14 @@ export default function AddProduct() {
                     required
                   >
                     <option value="">-- Select Category --</option>
-                    <option value="Dresses">Gowns</option>
-                    <option value="Tops">Two Piece Sets</option>
-                    <option value="Bottoms">Tops & Blouses</option>
-                    <option value="Two-Piece">Skirts</option>
-                    <option value="Outerwear">Jumpsuits</option>
-                    <option value="Outerwear">Jeans</option>
-                    <option value="Outerwear">Shorts</option>
-                    <option value="Outerwear">Crop Tops</option>
+                    <option value="Gowns">Gowns</option>
+                    <option value="Two Piece Sets">Two Piece Sets</option>
+                    <option value="Tops & Blouses">Tops & Blouses</option>
+                    <option value="Skirts">Skirts</option>
+                    <option value="Jumpsuits">Jumpsuits</option>
+                    <option value="Jeans">Jeans</option>
+                    <option value="Shorts">Shorts</option>
+                    <option value="Crop Tops">Crop Tops</option>
                   </Form.Select>
                 </Form.Group>
 
