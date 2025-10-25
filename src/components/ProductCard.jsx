@@ -1,6 +1,6 @@
 // src/components/ProductCard.jsx
 import React, { useContext } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { FaHeart, FaRegHeart } from "react-icons/fa";
 import { WishlistContext } from "../contexts/WishlistContext";
 import { Card, Button } from "react-bootstrap";
@@ -9,11 +9,12 @@ import { toast } from "react-toastify";
 
 export default function ProductCard({ product }) {
   const { addToCart } = useCart();
-
-  if (!product) return null;
+  const navigate = useNavigate();
 
   const { wishlistItems, addToWishlist, removeFromWishlist } =
     useContext(WishlistContext);
+
+  if (!product) return null;
 
   const isWishlisted = wishlistItems.some((item) => item.id === product.id);
 
@@ -27,16 +28,26 @@ export default function ProductCard({ product }) {
     }
   };
 
+  // ✅ Category click navigation
+  const handleCategoryClick = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (product.category) {
+      navigate(`/shop?category=${encodeURIComponent(product.category)}`);
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+  };
+
   return (
     <Card className="h-100 shadow-sm border-0 rounded-4 position-relative">
-      {/* ✅ Wrap image with Link to product details */}
+      {/* ✅ Product Image */}
       <Link to={`/product/${product.id}`}>
         <Card.Img
           variant="top"
           src={product.image || product.images?.[0]}
           alt={product.name || "Product"}
           style={{
-            aspectRatio: "4 / 5", // typical fashion product ratio
+            aspectRatio: "4 / 5",
             objectFit: "cover",
             width: "100%",
           }}
@@ -47,7 +58,7 @@ export default function ProductCard({ product }) {
         />
       </Link>
 
-      {/* Wishlist Button */}
+      {/* ❤️ Wishlist Icon */}
       <Button
         variant="outline-danger"
         className="rounded-circle position-absolute top-0 end-0 m-2"
@@ -57,10 +68,22 @@ export default function ProductCard({ product }) {
         {isWishlisted ? <FaHeart /> : <FaRegHeart />}
       </Button>
 
+      {/* ✅ Product Info */}
       <Card.Body className="d-flex flex-column justify-content-between">
         <div>
-          {/* ✅ Wrap title with Link to product details */}
-          <Card.Title className="fw-bold">
+          {/* 🏷️ Clickable Category */}
+          {product.category && (
+            <small
+              className="text-muted text-uppercase fw-semibold"
+              style={{ cursor: "pointer" }}
+              onClick={handleCategoryClick}
+            >
+              {product.category}
+            </small>
+          )}
+
+          {/* 🧢 Product Name */}
+          <Card.Title className="fw-bold mt-1">
             <Link
               to={`/product/${product.id}`}
               className="text-decoration-none text-dark"
@@ -68,13 +91,17 @@ export default function ProductCard({ product }) {
               {product.name}
             </Link>
           </Card.Title>
-          <Card.Text className="text-muted">
+
+          {/* 💰 Product Price */}
+          <Card.Text className="text-muted mb-2">
             ₦{Number(product?.price || 0).toLocaleString()}
           </Card.Text>
         </div>
+
+        {/* 🛒 Add to Cart */}
         <Button
           variant="dark"
-          className="mt-3 rounded-pill"
+          className="mt-2 rounded-pill"
           onClick={() => {
             addToCart(product);
             toast.success("Added to cart! 🛒");

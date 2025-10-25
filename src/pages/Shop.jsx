@@ -18,16 +18,19 @@ const priceRanges = [
 export default function Shop() {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
-
   const location = useLocation();
   const navigate = useNavigate();
-  const queryParams = new URLSearchParams(location.search);
 
+  // ✅ Parse query parameters
+  const queryParams = useMemo(
+    () => new URLSearchParams(location.search),
+    [location.search]
+  );
   const selectedCategory = queryParams.get("category") || "All";
   const selectedPriceRange = queryParams.get("price") || "All";
   const searchQuery = queryParams.get("search")?.toLowerCase().trim() || "";
 
-  // ✅ Fetch products from Firestore
+  // ✅ Fetch all products
   useEffect(() => {
     const fetchProducts = async () => {
       try {
@@ -46,7 +49,7 @@ export default function Shop() {
     fetchProducts();
   }, []);
 
-  // ✅ Get unique categories
+  // ✅ Extract categories dynamically
   const categories = useMemo(() => {
     if (!products.length) return ["All"];
     const unique = [
@@ -57,11 +60,10 @@ export default function Shop() {
     return ["All", ...unique];
   }, [products]);
 
-  // ✅ Filter products (category + price + search)
+  // ✅ Apply filtering (category, price, search)
   const filteredProducts = useMemo(() => {
     let filtered = [...products];
 
-    // Category
     if (selectedCategory !== "All") {
       filtered = filtered.filter(
         (p) =>
@@ -70,7 +72,6 @@ export default function Shop() {
       );
     }
 
-    // Price
     const priceRange = priceRanges.find((r) => r.label === selectedPriceRange);
     if (priceRange && priceRange.label !== "All") {
       filtered = filtered.filter((p) => {
@@ -79,7 +80,6 @@ export default function Shop() {
       });
     }
 
-    // Search
     if (searchQuery) {
       filtered = filtered.filter(
         (p) =>
@@ -91,7 +91,7 @@ export default function Shop() {
     return filtered;
   }, [products, selectedCategory, selectedPriceRange, searchQuery]);
 
-  // ✅ Handle category change
+  // ✅ Handle category and price updates in URL
   const handleCategoryChange = (cat) => {
     const params = new URLSearchParams(location.search);
     if (cat === "All") params.delete("category");
@@ -99,13 +99,17 @@ export default function Shop() {
     navigate(`/shop?${params.toString()}`);
   };
 
-  // ✅ Handle price change
   const handlePriceChange = (rangeLabel) => {
     const params = new URLSearchParams(location.search);
     if (rangeLabel === "All") params.delete("price");
     else params.set("price", rangeLabel);
     navigate(`/shop?${params.toString()}`);
   };
+
+  // ✅ Scroll to top on filter change
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }, [selectedCategory, selectedPriceRange, searchQuery]);
 
   return (
     <>
@@ -150,17 +154,6 @@ export default function Shop() {
                       className="rounded-pill text-capitalize position-relative"
                     >
                       {cat}
-                      {isActive && (
-                        <motion.div
-                          layoutId="activeCategory"
-                          className="position-absolute bottom-0 start-0 end-0"
-                          style={{
-                            height: "3px",
-                            background: "#000",
-                            borderRadius: "2px",
-                          }}
-                        />
-                      )}
                     </Button>
                   </motion.div>
                 );
@@ -184,17 +177,6 @@ export default function Shop() {
                       className="rounded-pill position-relative"
                     >
                       {range.label}
-                      {isActive && (
-                        <motion.div
-                          layoutId="activePrice"
-                          className="position-absolute bottom-0 start-0 end-0"
-                          style={{
-                            height: "3px",
-                            background: "#0d6efd",
-                            borderRadius: "2px",
-                          }}
-                        />
-                      )}
                     </Button>
                   </motion.div>
                 );
@@ -203,12 +185,18 @@ export default function Shop() {
 
             {/* 🛍 Product Grid */}
             {filteredProducts.length === 0 ? (
-              <p className="text-center">No products found.</p>
+              <p className="text-center text-muted">No products found.</p>
             ) : (
               <Row className="gx-4 gy-5">
                 {filteredProducts.map((product) => (
                   <Col xs={12} sm={6} md={4} lg={3} key={product.id}>
-                    <ProductCard product={product} />
+                    <motion.div
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 0.3 }}
+                    >
+                      <ProductCard product={product} />
+                    </motion.div>
                   </Col>
                 ))}
               </Row>

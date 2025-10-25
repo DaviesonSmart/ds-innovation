@@ -1,3 +1,4 @@
+// src/components/Navbar.jsx
 import React, { useContext, useState, useEffect } from "react";
 import {
   Navbar,
@@ -8,6 +9,7 @@ import {
   Badge,
   Offcanvas,
   NavDropdown,
+  Collapse,
 } from "react-bootstrap";
 import { NavLink, useNavigate } from "react-router-dom";
 import {
@@ -23,6 +25,8 @@ import {
   FaUserPlus,
   FaSignOutAlt,
   FaUserCog,
+  FaChevronDown,
+  FaChevronUp,
 } from "react-icons/fa";
 import { motion, AnimatePresence } from "framer-motion";
 import { CartContext } from "../contexts/CartContext";
@@ -40,8 +44,11 @@ export default function NavigationBar() {
 
   const [show, setShow] = useState(false);
   const [categories, setCategories] = useState([]);
-  const [searchTerm, setSearchTerm] = useState(""); // ✅ unified search
-  const toggleOffcanvas = () => setShow(!show);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [showShopDropdown, setShowShopDropdown] = useState(false);
+
+  const toggleOffcanvas = () => setShow((prev) => !prev);
+  const toggleShopDropdown = () => setShowShopDropdown((prev) => !prev);
 
   const handleLogout = async () => {
     try {
@@ -52,35 +59,32 @@ export default function NavigationBar() {
     }
   };
 
-  // ✅ Handle search for all (desktop, mobile, offcanvas)
   const handleSearch = (e) => {
     e.preventDefault();
     const trimmed = searchTerm.trim();
     if (trimmed) {
       navigate(`/shop?search=${encodeURIComponent(trimmed)}`);
-      setShow(false); // close offcanvas if open
-      setSearchTerm("");
     } else {
       navigate("/shop");
     }
+    setShow(false);
+    setSearchTerm("");
   };
 
-  // ✅ Fetch categories dynamically from Firestore
+  // ✅ Fetch unique categories from Firestore
   useEffect(() => {
     const fetchCategories = async () => {
       try {
         const querySnapshot = await getDocs(collection(db, "products"));
-        const productData = querySnapshot.docs.map((doc) => doc.data());
-        const uniqueCategories = [
+        const products = querySnapshot.docs.map((doc) => doc.data());
+        const unique = [
           ...new Set(
-            productData
-              .map((p) => p.category?.trim())
-              .filter((c) => c && c !== "")
+            products.map((p) => p.category?.trim()).filter((c) => c && c !== "")
           ),
         ];
-        setCategories(uniqueCategories);
-      } catch (error) {
-        console.error("Error fetching categories:", error);
+        setCategories(unique);
+      } catch (err) {
+        console.error("Error fetching categories:", err);
       }
     };
     fetchCategories();
@@ -92,9 +96,9 @@ export default function NavigationBar() {
   return (
     <>
       <motion.nav
-        initial={{ y: -50, opacity: 0 }}
+        initial={{ y: -40, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
-        transition={{ duration: 0.6 }}
+        transition={{ duration: 0.5 }}
       >
         <Navbar
           bg="dark"
@@ -108,20 +112,18 @@ export default function NavigationBar() {
               Smart<span className="text-primary">Tech</span> 👗
             </Navbar.Brand>
 
-            {/* ✅ Mobile Search Bar */}
+            {/* ✅ Mobile search */}
             <AnimatePresence>
               <motion.div
                 className="d-lg-none flex-grow-1 mx-2"
-                initial={{ opacity: 0, y: -15 }}
+                initial={{ opacity: 0, y: -10 }}
                 animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -15 }}
-                transition={{ duration: 0.4 }}
+                exit={{ opacity: 0, y: -10 }}
               >
                 <Form className="d-flex" onSubmit={handleSearch}>
                   <Form.Control
                     type="search"
                     placeholder="Search products..."
-                    className="me-2"
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
                   />
@@ -132,7 +134,7 @@ export default function NavigationBar() {
               </motion.div>
             </AnimatePresence>
 
-            {/* ✅ Mobile Toggle */}
+            {/* ✅ Mobile toggle */}
             <Button
               variant="outline-light"
               className="d-lg-none ms-2"
@@ -141,26 +143,31 @@ export default function NavigationBar() {
               <FaBars />
             </Button>
 
-            {/* ✅ Desktop Menu */}
+            {/* ✅ Desktop menu */}
             <Navbar.Collapse className="justify-content-between d-none d-lg-flex">
               <Nav className="me-auto">
                 <Nav.Link as={NavLink} to="/" end>
                   Home
                 </Nav.Link>
 
+                {/* 🛍 Shop dropdown */}
                 <NavDropdown title="Shop" id="shop-dropdown">
-                  <NavDropdown.Item as={NavLink} to="/shop">
+                  <NavDropdown.Item
+                    onClick={() => navigate("/shop")}
+                    className="fw-semibold"
+                  >
                     All Products
                   </NavDropdown.Item>
                   <NavDropdown.Divider />
                   {categories.length > 0 ? (
-                    categories.map((category) => (
+                    categories.map((cat) => (
                       <NavDropdown.Item
-                        key={category}
-                        as={NavLink}
-                        to={`/shop?category=${encodeURIComponent(category)}`}
+                        key={cat}
+                        onClick={() =>
+                          navigate(`/shop?category=${encodeURIComponent(cat)}`)
+                        }
                       >
-                        {category}
+                        {cat}
                       </NavDropdown.Item>
                     ))
                   ) : (
@@ -176,9 +183,9 @@ export default function NavigationBar() {
                 </Nav.Link>
               </Nav>
 
-              {/* ✅ Desktop Search */}
+              {/* ✅ Desktop search */}
               <Form
-                className="d-flex mx-auto my-2 my-lg-0"
+                className="d-flex mx-auto"
                 style={{ flexGrow: 1, minWidth: "220px", maxWidth: "600px" }}
                 onSubmit={handleSearch}
               >
@@ -188,16 +195,12 @@ export default function NavigationBar() {
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                 />
-                <Button
-                  type="submit"
-                  variant="outline-light"
-                  className="rounded-pill px-3"
-                >
+                <Button type="submit" variant="outline-light">
                   <FaSearch />
                 </Button>
               </Form>
 
-              {/* ✅ Right Icons + Auth */}
+              {/* ✅ Right icons */}
               <Nav className="align-items-center">
                 <Nav.Link as={NavLink} to="/cart" className="position-relative">
                   <FaShoppingCart size={22} />
@@ -267,159 +270,106 @@ export default function NavigationBar() {
         </Navbar>
       </motion.nav>
 
-      {/* ✅ Mobile Offcanvas */}
-      <Offcanvas
-        show={show}
-        onHide={toggleOffcanvas}
-        placement="start"
-        className="custom-offcanvas"
-      >
-        <Offcanvas.Header closeButton className="border-bottom">
-          <Offcanvas.Title className="fw-bold fs-4 text-gradient">
+      {/* ✅ Mobile Offcanvas menu */}
+      <Offcanvas show={show} onHide={toggleOffcanvas} placement="start">
+        <Offcanvas.Header closeButton>
+          <Offcanvas.Title className="fw-bold fs-4">
             SmartTech ✨
           </Offcanvas.Title>
         </Offcanvas.Header>
-
         <Offcanvas.Body>
-          <motion.div
-            initial={{ opacity: 0, x: -50 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.5 }}
-            className="d-flex flex-column gap-3"
-          >
-            {/* ✅ Unified Search in Offcanvas */}
-            <Form className="d-flex mb-3" onSubmit={handleSearch}>
-              <Form.Control
-                type="search"
-                placeholder="Search..."
-                className="me-2 flex-grow-1"
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-              />
+          {/* ✅ Search inside offcanvas */}
+          <Form className="d-flex mb-3" onSubmit={handleSearch}>
+            <Form.Control
+              type="search"
+              placeholder="Search..."
+              className="me-2"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
+            <Button type="submit" variant="outline-dark">
+              <FaSearch />
+            </Button>
+          </Form>
+
+          <Nav className="flex-column">
+            <Nav.Link as={NavLink} to="/" onClick={toggleOffcanvas}>
+              <FaHome /> Home
+            </Nav.Link>
+
+            {/* 🛍 Improved dropdown toggle */}
+            <div>
               <Button
-                type="submit"
                 variant="outline-dark"
-                className="rounded-pill px-3"
+                className="w-100 d-flex justify-content-between align-items-center mb-2"
+                onClick={toggleShopDropdown}
+                aria-expanded={showShopDropdown}
               >
-                <FaSearch />
+                <span>
+                  <FaShoppingBag /> Shop
+                </span>
+                {showShopDropdown ? <FaChevronUp /> : <FaChevronDown />}
               </Button>
-            </Form>
 
-            {/* ✅ Offcanvas Links */}
-            <Nav className="flex-column">
-              <motion.div whileHover={{ scale: 1.05, x: 5 }}>
-                <Nav.Link as={NavLink} to="/" onClick={toggleOffcanvas}>
-                  <FaHome /> Home
-                </Nav.Link>
-              </motion.div>
-
-              {/* 🛍️ Shop Dropdown */}
-              <motion.div whileHover={{ scale: 1.05, x: 5 }}>
-                <div className="dropdown w-100">
-                  <button
-                    className="btn btn-outline-dark w-100 dropdown-toggle text-start"
-                    type="button"
-                    data-bs-toggle="dropdown"
-                    aria-expanded="false"
+              <Collapse in={showShopDropdown}>
+                <div>
+                  <Button
+                    variant="link"
+                    className="text-start w-100 text-dark fw-semibold"
+                    onClick={() => {
+                      navigate("/shop");
+                      toggleOffcanvas();
+                    }}
                   >
-                    <FaShoppingBag /> Shop
-                  </button>
-                  <ul className="dropdown-menu w-100">
-                    <li>
-                      <NavLink
-                        className="dropdown-item"
-                        to="/shop"
-                        onClick={toggleOffcanvas}
+                    All Products
+                  </Button>
+
+                  {categories.length > 0 ? (
+                    categories.map((cat) => (
+                      <Button
+                        key={cat}
+                        variant="link"
+                        className="text-start w-100 text-capitalize text-dark"
+                        onClick={() => {
+                          navigate(`/shop?category=${encodeURIComponent(cat)}`);
+                          toggleOffcanvas();
+                        }}
                       >
-                        All Products
-                      </NavLink>
-                    </li>
-                    <li>
-                      <hr className="dropdown-divider" />
-                    </li>
-                    {categories.length > 0 ? (
-                      categories.map((cat) => (
-                        <li key={cat}>
-                          <NavLink
-                            className="dropdown-item text-capitalize"
-                            to={`/shop?category=${encodeURIComponent(cat)}`}
-                            onClick={toggleOffcanvas}
-                          >
-                            {cat}
-                          </NavLink>
-                        </li>
-                      ))
-                    ) : (
-                      <li>
-                        <span className="dropdown-item text-muted">
-                          No categories yet
-                        </span>
-                      </li>
-                    )}
-                  </ul>
+                        {cat}
+                      </Button>
+                    ))
+                  ) : (
+                    <p className="ps-3 text-muted small mb-2">
+                      No categories found
+                    </p>
+                  )}
                 </div>
-              </motion.div>
+              </Collapse>
+            </div>
 
-              {/* 📖 About */}
-              <motion.div whileHover={{ scale: 1.05, x: 5 }}>
-                <Nav.Link as={NavLink} to="/about" onClick={toggleOffcanvas}>
-                  <FaInfoCircle /> About
-                </Nav.Link>
-              </motion.div>
-
-              {/* ✉️ Contact */}
-              <motion.div whileHover={{ scale: 1.05, x: 5 }}>
-                <Nav.Link as={NavLink} to="/contact" onClick={toggleOffcanvas}>
-                  <FaEnvelope /> Contact
-                </Nav.Link>
-              </motion.div>
-
-              {/* 🛒 Cart */}
-              <motion.div whileHover={{ scale: 1.05, x: 5 }}>
-                <Nav.Link
-                  as={NavLink}
-                  to="/cart"
-                  onClick={toggleOffcanvas}
-                  className="position-relative"
-                >
-                  <FaShoppingCart /> Cart
-                  {cartItems.length > 0 && (
-                    <Badge bg="danger" pill className="badge-custom">
-                      {cartItems.length}
-                    </Badge>
-                  )}
-                </Nav.Link>
-              </motion.div>
-
-              {/* 💖 Wishlist */}
-              <motion.div whileHover={{ scale: 1.05, x: 5 }}>
-                <Nav.Link
-                  as={NavLink}
-                  to="/wishlist"
-                  onClick={toggleOffcanvas}
-                  className="position-relative"
-                >
-                  <FaHeart /> Wishlist
-                  {wishlistItems.length > 0 && (
-                    <Badge bg="danger" pill className="badge-custom">
-                      {wishlistItems.length}
-                    </Badge>
-                  )}
-                </Nav.Link>
-              </motion.div>
-            </Nav>
+            <Nav.Link as={NavLink} to="/about" onClick={toggleOffcanvas}>
+              <FaInfoCircle /> About
+            </Nav.Link>
+            <Nav.Link as={NavLink} to="/contact" onClick={toggleOffcanvas}>
+              <FaEnvelope /> Contact
+            </Nav.Link>
+            <Nav.Link as={NavLink} to="/cart" onClick={toggleOffcanvas}>
+              <FaShoppingCart /> Cart
+            </Nav.Link>
+            <Nav.Link as={NavLink} to="/wishlist" onClick={toggleOffcanvas}>
+              <FaHeart /> Wishlist
+            </Nav.Link>
 
             <hr />
 
-            {/* ✅ Auth Section */}
             {user ? (
-              <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+              <>
                 <div className="fw-semibold mb-2 text-muted">
                   {user.displayName || user.email}
                 </div>
                 <Button
                   variant="outline-dark"
-                  className="w-100 d-flex align-items-center gap-2"
+                  className="w-100 mb-2"
                   onClick={handleLogout}
                 >
                   <FaSignOutAlt /> Logout
@@ -428,33 +378,23 @@ export default function NavigationBar() {
                   <Nav.Link
                     as={NavLink}
                     to="/admin"
-                    className="text-warning mt-2 fw-bold"
+                    className="text-warning fw-bold"
                   >
                     <FaUserCog /> Admin
                   </Nav.Link>
                 )}
-              </motion.div>
+              </>
             ) : (
               <>
-                <Nav.Link
-                  as={NavLink}
-                  to="/login"
-                  onClick={toggleOffcanvas}
-                  className="menu-link"
-                >
+                <Nav.Link as={NavLink} to="/login" onClick={toggleOffcanvas}>
                   <FaSignInAlt /> Login
                 </Nav.Link>
-                <Nav.Link
-                  as={NavLink}
-                  to="/register"
-                  onClick={toggleOffcanvas}
-                  className="menu-link"
-                >
+                <Nav.Link as={NavLink} to="/register" onClick={toggleOffcanvas}>
                   <FaUserPlus /> Register
                 </Nav.Link>
               </>
             )}
-          </motion.div>
+          </Nav>
         </Offcanvas.Body>
       </Offcanvas>
     </>

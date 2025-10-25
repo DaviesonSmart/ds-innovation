@@ -4,9 +4,8 @@ import ProductCard from "./ProductCard";
 import { Container, Row, Col, Button, Spinner } from "react-bootstrap";
 import { motion } from "framer-motion";
 import { fetchProducts } from "../firebaseHelpers";
-import { useNavigate } from "react-router-dom"; // ✅ for navigation
+import { useNavigate } from "react-router-dom";
 
-// Price ranges
 const priceRanges = [
   { label: "All", min: 0, max: Infinity },
   { label: "Under ₦10,000", min: 0, max: 9999 },
@@ -21,6 +20,7 @@ export default function ProductList({ enableNavigation = false }) {
   const [selectedPriceRange, setSelectedPriceRange] = useState("All");
   const navigate = useNavigate();
 
+  // Fetch all products
   useEffect(() => {
     const loadProducts = async () => {
       const data = await fetchProducts();
@@ -30,19 +30,19 @@ export default function ProductList({ enableNavigation = false }) {
     loadProducts();
   }, []);
 
-  // ✅ Extract categories dynamically from Firestore products
+  // Unique categories
   const categories = useMemo(() => {
     if (!products.length) return ["All"];
     const cats = products.map((p) => p.category?.trim()).filter(Boolean);
     return ["All", ...Array.from(new Set(cats))];
   }, [products]);
 
-  // ✅ Filtered products
+  // Filter logic (Shop page)
   const filteredProducts = useMemo(() => {
     return products.filter((p) => {
-      const productCategory = (p.category || "").trim();
+      const category = (p.category || "").trim();
       const inCategory =
-        selectedCategory === "All" || productCategory === selectedCategory;
+        selectedCategory === "All" || category === selectedCategory;
 
       const priceRange = priceRanges.find(
         (range) => range.label === selectedPriceRange
@@ -56,9 +56,22 @@ export default function ProductList({ enableNavigation = false }) {
     });
   }, [products, selectedCategory, selectedPriceRange]);
 
+  // Group products by category (Home)
+  const groupedProducts = useMemo(() => {
+    const groups = {};
+    products.forEach((p) => {
+      const cat = p.category?.trim() || "Others";
+      if (!groups[cat]) groups[cat] = [];
+      groups[cat].push(p);
+    });
+    return groups;
+  }, [products]);
+
   return (
     <Container fluid className="py-5 px-4">
-      <h2 className="mb-4 fw-bold text-center">Shop Our Collection</h2>
+      <h2 className="mb-4 fw-bold text-center">
+        {enableNavigation ? "Our Latest Collections" : "Shop Our Collection"}
+      </h2>
 
       {loading ? (
         <div className="text-center my-5">
@@ -67,68 +80,109 @@ export default function ProductList({ enableNavigation = false }) {
         </div>
       ) : (
         <>
-          {/* Category Filter */}
-          <div className="d-flex justify-content-center mb-3 flex-wrap gap-2">
-            {categories.map((cat) => (
-              <Button
-                key={cat}
-                variant={selectedCategory === cat ? "dark" : "outline-dark"}
-                onClick={() => {
-                  if (enableNavigation && cat !== "All") {
-                    // ✅ Redirect to Shop page with query
-                    navigate(`/shop?category=${encodeURIComponent(cat)}`);
-                  } else {
-                    // Local filter (used when already on Shop page)
-                    setSelectedCategory(cat);
-                  }
-                }}
-                className="rounded-pill text-capitalize"
-              >
-                {cat}
-              </Button>
-            ))}
-          </div>
-
-          {/* Price Filter */}
+          {/* Shop Page Filters */}
           {!enableNavigation && (
-            <div className="d-flex justify-content-center mb-4 flex-wrap gap-2">
-              {priceRanges.map((range) => (
-                <Button
-                  key={range.label}
-                  variant={
-                    selectedPriceRange === range.label
-                      ? "primary"
-                      : "outline-primary"
-                  }
-                  onClick={() => setSelectedPriceRange(range.label)}
-                  className="rounded-pill"
-                >
-                  {range.label}
-                </Button>
-              ))}
-            </div>
+            <>
+              <div className="d-flex justify-content-center mb-3 flex-wrap gap-2">
+                {categories.map((cat) => (
+                  <Button
+                    key={cat}
+                    variant={selectedCategory === cat ? "dark" : "outline-dark"}
+                    onClick={() => setSelectedCategory(cat)}
+                    className="rounded-pill text-capitalize"
+                  >
+                    {cat}
+                  </Button>
+                ))}
+              </div>
+
+              <div className="d-flex justify-content-center mb-4 flex-wrap gap-2">
+                {priceRanges.map((range) => (
+                  <Button
+                    key={range.label}
+                    variant={
+                      selectedPriceRange === range.label
+                        ? "primary"
+                        : "outline-primary"
+                    }
+                    onClick={() => setSelectedPriceRange(range.label)}
+                    className="rounded-pill"
+                  >
+                    {range.label}
+                  </Button>
+                ))}
+              </div>
+
+              <Row className="gx-4 gy-4">
+                {filteredProducts.length > 0 ? (
+                  filteredProducts.map((product) => (
+                    <Col key={product.id} xs={12} sm={6} md={4} lg={3}>
+                      <motion.div
+                        initial={{ opacity: 0, y: 30 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.4 }}
+                      >
+                        <ProductCard product={product} />
+                      </motion.div>
+                    </Col>
+                  ))
+                ) : (
+                  <Col>
+                    <p className="text-center text-muted">No products found.</p>
+                  </Col>
+                )}
+              </Row>
+            </>
           )}
 
-          {/* Product Grid */}
-          <Row className="gx-4 gy-4">
-            {filteredProducts.length > 0 ? (
-              filteredProducts.map((product) => (
-                <Col key={product.id} xs={12} sm={6} md={4} lg={3}>
-                  <motion.div
-                    initial={{ opacity: 0, y: 30 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.4 }}
-                  >
-                    <ProductCard product={product} />
-                  </motion.div>
-                </Col>
-              ))
-            ) : (
-              <Col>
-                <p className="text-center text-muted">No products found.</p>
-              </Col>
-            )}
-          </Row>
+          {/* Homepage: Category Previews */}
+          {enableNavigation && (
+            <>
+              {Object.entries(groupedProducts).map(([category, items]) => (
+                <div key={category} className="mb-5">
+                  <div className="d-flex justify-content-between align-items-center mb-3">
+                    <h4 className="fw-bold text-capitalize">{category}</h4>
+                    <Button
+                      variant="link"
+                      className="text-decoration-none fw-semibold"
+                      onClick={() =>
+                        navigate(
+                          `/shop?category=${encodeURIComponent(category)}`
+                        )
+                      }
+                    >
+                      See More →
+                    </Button>
+                  </div>
+
+                  <Row className="gx-4 gy-4">
+                    {items.slice(0, 3).map((product) => (
+                      <Col key={product.id} xs={12} sm={6} md={4} lg={3}>
+                        <motion.div
+                          initial={{ opacity: 0, y: 30 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ duration: 0.4 }}
+                        >
+                          <ProductCard product={product} />
+                        </motion.div>
+                      </Col>
+                    ))}
+                  </Row>
+                </div>
+              ))}
+
+              <div className="text-center mt-4">
+                <Button
+                  variant="dark"
+                  size="lg"
+                  onClick={() => navigate("/shop")}
+                  className="px-4"
+                >
+                  View All Products
+                </Button>
+              </div>
+            </>
+          )}
         </>
       )}
     </Container>

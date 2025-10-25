@@ -21,9 +21,11 @@ export default function Home() {
         <meta name="author" content="SmartTech Collections" />
       </Helmet>
 
-      {/* Main homepage sections */}
       <Hero />
-      <ProductList enableNavigation={true} />
+
+      {/* Show only few products on homepage */}
+      <ProductList limit={6} enableNavigation={true} />
+
       <Testimonials />
       <Newsletter />
     </>
