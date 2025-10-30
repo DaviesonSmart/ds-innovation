@@ -20,7 +20,7 @@ export default function ProductList({ enableNavigation = false }) {
   const [selectedPriceRange, setSelectedPriceRange] = useState("All");
   const navigate = useNavigate();
 
-  // Fetch all products
+  // Fetch products from Firestore
   useEffect(() => {
     const loadProducts = async () => {
       const data = await fetchProducts();
@@ -30,14 +30,14 @@ export default function ProductList({ enableNavigation = false }) {
     loadProducts();
   }, []);
 
-  // Unique categories
+  // Extract categories dynamically
   const categories = useMemo(() => {
     if (!products.length) return ["All"];
-    const cats = products.map((p) => p.category?.trim()).filter(Boolean);
-    return ["All", ...Array.from(new Set(cats))];
+    const unique = Array.from(new Set(products.map((p) => p.category?.trim())));
+    return ["All", ...unique.filter(Boolean)];
   }, [products]);
 
-  // Filter logic (Shop page)
+  // Apply filters (Shop Page)
   const filteredProducts = useMemo(() => {
     return products.filter((p) => {
       const category = (p.category || "").trim();
@@ -56,33 +56,39 @@ export default function ProductList({ enableNavigation = false }) {
     });
   }, [products, selectedCategory, selectedPriceRange]);
 
-  // Group products by category (Home)
+  // Homepage featured categories
+  const homepageCategories = ["Gowns", "Two Pieces", "Jumpsuit"];
+
+  // Group homepage products by category
   const groupedProducts = useMemo(() => {
     const groups = {};
     products.forEach((p) => {
-      const cat = p.category?.trim() || "Others";
-      if (!groups[cat]) groups[cat] = [];
-      groups[cat].push(p);
+      const cat = p.category?.trim();
+      if (homepageCategories.includes(cat)) {
+        if (!groups[cat]) groups[cat] = [];
+        groups[cat].push(p);
+      }
     });
     return groups;
   }, [products]);
 
   return (
-    <Container fluid className="py-5 px-4">
-      <h2 className="mb-4 fw-bold text-center">
+    <Container fluid className="py-5 px-4 bg-light">
+      <h2 className="text-center fw-bold mb-4">
         {enableNavigation ? "Our Latest Collections" : "Shop Our Collection"}
       </h2>
 
       {loading ? (
         <div className="text-center my-5">
-          <Spinner animation="border" variant="primary" />
+          <Spinner animation="border" variant="dark" />
           <p className="mt-2">Loading products...</p>
         </div>
       ) : (
         <>
-          {/* Shop Page Filters */}
+          {/* --- SHOP PAGE --- */}
           {!enableNavigation && (
             <>
+              {/* Filter by Category */}
               <div className="d-flex justify-content-center mb-3 flex-wrap gap-2">
                 {categories.map((cat) => (
                   <Button
@@ -96,6 +102,7 @@ export default function ProductList({ enableNavigation = false }) {
                 ))}
               </div>
 
+              {/* Filter by Price */}
               <div className="d-flex justify-content-center mb-4 flex-wrap gap-2">
                 {priceRanges.map((range) => (
                   <Button
@@ -113,6 +120,7 @@ export default function ProductList({ enableNavigation = false }) {
                 ))}
               </div>
 
+              {/* Products Grid */}
               <Row className="gx-4 gy-4">
                 {filteredProducts.length > 0 ? (
                   filteredProducts.map((product) => (
@@ -135,48 +143,55 @@ export default function ProductList({ enableNavigation = false }) {
             </>
           )}
 
-          {/* Homepage: Category Previews */}
+          {/* --- HOMEPAGE (1 PRODUCT PER CATEGORY) --- */}
           {enableNavigation && (
             <>
-              {Object.entries(groupedProducts).map(([category, items]) => (
-                <div key={category} className="mb-5">
-                  <div className="d-flex justify-content-between align-items-center mb-3">
-                    <h4 className="fw-bold text-capitalize">{category}</h4>
-                    <Button
-                      variant="link"
-                      className="text-decoration-none fw-semibold"
-                      onClick={() =>
-                        navigate(
-                          `/shop?category=${encodeURIComponent(category)}`
-                        )
-                      }
-                    >
-                      See More →
-                    </Button>
+              {homepageCategories.map((category) => {
+                const items = groupedProducts[category] || [];
+                if (!items.length) return null;
+                return (
+                  <div key={category} className="mb-5">
+                    <div className="d-flex justify-content-between align-items-center mb-3">
+                      <h4 className="fw-bold text-capitalize mb-0">
+                        {category}
+                      </h4>
+                      <Button
+                        variant="link"
+                        className="text-decoration-none fw-semibold"
+                        onClick={() =>
+                          navigate(
+                            `/shop?category=${encodeURIComponent(category)}`
+                          )
+                        }
+                      >
+                        See More →
+                      </Button>
+                    </div>
+
+                    {/* Display only 1 product per category */}
+                    <Row className="gx-4 gy-4">
+                      {items.slice(0, 1).map((product) => (
+                        <Col key={product.id} xs={12} sm={6} md={4} lg={3}>
+                          <motion.div
+                            initial={{ opacity: 0, y: 30 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ duration: 0.4 }}
+                          >
+                            <ProductCard product={product} />
+                          </motion.div>
+                        </Col>
+                      ))}
+                    </Row>
                   </div>
+                );
+              })}
 
-                  <Row className="gx-4 gy-4">
-                    {items.slice(0, 3).map((product) => (
-                      <Col key={product.id} xs={12} sm={6} md={4} lg={3}>
-                        <motion.div
-                          initial={{ opacity: 0, y: 30 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          transition={{ duration: 0.4 }}
-                        >
-                          <ProductCard product={product} />
-                        </motion.div>
-                      </Col>
-                    ))}
-                  </Row>
-                </div>
-              ))}
-
-              <div className="text-center mt-4">
+              <div className="text-center mt-5">
                 <Button
                   variant="dark"
                   size="lg"
                   onClick={() => navigate("/shop")}
-                  className="px-4"
+                  className="px-4 rounded-pill"
                 >
                   View All Products
                 </Button>

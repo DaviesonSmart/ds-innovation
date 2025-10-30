@@ -11,7 +11,6 @@ import {
 import { motion } from "framer-motion";
 import { toast } from "react-toastify";
 
-
 export default function Newsletter() {
   const [email, setEmail] = useState("");
   const [showToast, setShowToast] = useState(false);

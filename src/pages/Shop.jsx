@@ -21,25 +21,24 @@ export default function Shop() {
   const location = useLocation();
   const navigate = useNavigate();
 
-  // ✅ Parse query parameters
+  // --- Get filters from URL ---
   const queryParams = useMemo(
     () => new URLSearchParams(location.search),
     [location.search]
   );
   const selectedCategory = queryParams.get("category") || "All";
   const selectedPriceRange = queryParams.get("price") || "All";
-  const searchQuery = queryParams.get("search")?.toLowerCase().trim() || "";
 
-  // ✅ Fetch all products
+  // --- Fetch products ---
   useEffect(() => {
     const fetchProducts = async () => {
       try {
         const querySnapshot = await getDocs(collection(db, "products"));
-        const productData = querySnapshot.docs.map((doc) => ({
+        const data = querySnapshot.docs.map((doc) => ({
           id: doc.id,
           ...doc.data(),
         }));
-        setProducts(productData);
+        setProducts(data);
       } catch (error) {
         console.error("Error fetching products:", error);
       } finally {
@@ -49,49 +48,45 @@ export default function Shop() {
     fetchProducts();
   }, []);
 
-  // ✅ Extract categories dynamically
+  // --- Extract all categories dynamically ---
   const categories = useMemo(() => {
     if (!products.length) return ["All"];
     const unique = [
-      ...new Set(
-        products.map((p) => p.category?.trim()).filter((c) => c && c !== "")
-      ),
+      ...new Set(products.map((p) => p.category?.trim()).filter(Boolean)),
     ];
     return ["All", ...unique];
   }, [products]);
 
-  // ✅ Apply filtering (category, price, search)
+  // --- Filter products ---
   const filteredProducts = useMemo(() => {
-    let filtered = [...products];
+    return products.filter((p) => {
+      const cat = p.category?.trim();
+      const price = parseFloat(p.price || 0);
 
-    if (selectedCategory !== "All") {
-      filtered = filtered.filter(
-        (p) =>
-          p.category?.toLowerCase().trim() ===
-          selectedCategory.toLowerCase().trim()
+      const inCategory = selectedCategory === "All" || cat === selectedCategory;
+      const priceRange = priceRanges.find(
+        (r) => r.label === selectedPriceRange
       );
-    }
+      const inPrice =
+        selectedPriceRange === "All" ||
+        (price >= priceRange.min && price <= priceRange.max);
 
-    const priceRange = priceRanges.find((r) => r.label === selectedPriceRange);
-    if (priceRange && priceRange.label !== "All") {
-      filtered = filtered.filter((p) => {
-        const price = parseFloat(p.price || 0);
-        return price >= priceRange.min && price <= priceRange.max;
-      });
-    }
+      return inCategory && inPrice;
+    });
+  }, [products, selectedCategory, selectedPriceRange]);
 
-    if (searchQuery) {
-      filtered = filtered.filter(
-        (p) =>
-          p.name?.toLowerCase().includes(searchQuery) ||
-          p.category?.toLowerCase().includes(searchQuery)
-      );
-    }
+  // --- Group filtered products by category ---
+  const groupedProducts = useMemo(() => {
+    const groups = {};
+    filteredProducts.forEach((p) => {
+      const cat = p.category || "Uncategorized";
+      if (!groups[cat]) groups[cat] = [];
+      groups[cat].push(p);
+    });
+    return groups;
+  }, [filteredProducts]);
 
-    return filtered;
-  }, [products, selectedCategory, selectedPriceRange, searchQuery]);
-
-  // ✅ Handle category and price updates in URL
+  // --- Update filters in URL ---
   const handleCategoryChange = (cat) => {
     const params = new URLSearchParams(location.search);
     if (cat === "All") params.delete("category");
@@ -106,10 +101,10 @@ export default function Shop() {
     navigate(`/shop?${params.toString()}`);
   };
 
-  // ✅ Scroll to top on filter change
+  // --- Scroll top on change ---
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: "smooth" });
-  }, [selectedCategory, selectedPriceRange, searchQuery]);
+  }, [selectedCategory, selectedPriceRange]);
 
   return (
     <>
@@ -117,89 +112,80 @@ export default function Shop() {
         <title>SmartTech Collections | Shop</title>
         <meta
           name="description"
-          content="Explore our trendy female wears including skirts, tops, and gowns. Affordable prices with premium quality!"
+          content="Shop classy female wears including gowns, two-piece sets, and jumpsuits. Premium designs at SmartTech Collections!"
         />
       </Helmet>
 
       <Container className="py-5">
         <h2 className="text-center fw-bold mb-4">
-          {searchQuery
-            ? `Search Results for "${searchQuery}"`
-            : selectedCategory === "All"
+          {selectedCategory === "All"
             ? "Shop Our Female Wears"
             : `Shop ${selectedCategory}`}
         </h2>
 
         {loading ? (
-          <div className="text-center">
+          <div className="text-center my-5">
             <Spinner animation="border" variant="primary" />
-            <p>Loading products...</p>
+            <p className="mt-2">Loading products...</p>
           </div>
         ) : (
           <>
-            {/* 🏷 Category Filter */}
+            {/* 🔘 Category Filter */}
             <div className="d-flex justify-content-center mb-3 flex-wrap gap-2">
-              {categories.map((cat) => {
-                const isActive = selectedCategory === cat;
-                return (
-                  <motion.div
-                    key={cat}
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                    layout
-                  >
-                    <Button
-                      variant={isActive ? "dark" : "outline-dark"}
-                      onClick={() => handleCategoryChange(cat)}
-                      className="rounded-pill text-capitalize position-relative"
-                    >
-                      {cat}
-                    </Button>
-                  </motion.div>
-                );
-              })}
+              {categories.map((cat) => (
+                <Button
+                  key={cat}
+                  variant={selectedCategory === cat ? "dark" : "outline-dark"}
+                  onClick={() => handleCategoryChange(cat)}
+                  className="rounded-pill text-capitalize"
+                >
+                  {cat}
+                </Button>
+              ))}
             </div>
 
             {/* 💰 Price Filter */}
-            <div className="d-flex justify-content-center mb-4 flex-wrap gap-2">
-              {priceRanges.map((range) => {
-                const isActive = selectedPriceRange === range.label;
-                return (
-                  <motion.div
-                    key={range.label}
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                    layout
-                  >
-                    <Button
-                      variant={isActive ? "primary" : "outline-primary"}
-                      onClick={() => handlePriceChange(range.label)}
-                      className="rounded-pill position-relative"
-                    >
-                      {range.label}
-                    </Button>
-                  </motion.div>
-                );
-              })}
+            <div className="d-flex justify-content-center mb-5 flex-wrap gap-2">
+              {priceRanges.map((range) => (
+                <Button
+                  key={range.label}
+                  variant={
+                    selectedPriceRange === range.label
+                      ? "primary"
+                      : "outline-primary"
+                  }
+                  onClick={() => handlePriceChange(range.label)}
+                  className="rounded-pill"
+                >
+                  {range.label}
+                </Button>
+              ))}
             </div>
 
-            {/* 🛍 Product Grid */}
-            {filteredProducts.length === 0 ? (
+            {/* 🛍 Grouped Display by Category */}
+            {Object.keys(groupedProducts).length === 0 ? (
               <p className="text-center text-muted">No products found.</p>
             ) : (
-              <Row className="gx-4 gy-5">
-                {filteredProducts.map((product) => (
-                  <Col xs={12} sm={6} md={4} lg={3} key={product.id}>
-                    <motion.div
-                      initial={{ opacity: 0, y: 20 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ duration: 0.3 }}
-                    >
-                      <ProductCard product={product} />
-                    </motion.div>
-                  </Col>
-                ))}
-              </Row>
+              Object.entries(groupedProducts).map(([category, items]) => (
+                <div key={category} className="mb-5">
+                  <h4 className="fw-bold mb-3 text-capitalize border-bottom pb-2">
+                    {category}
+                  </h4>
+                  <Row className="gx-4 gy-4">
+                    {items.map((product) => (
+                      <Col key={product.id} xs={12} sm={6} md={4} lg={3}>
+                        <motion.div
+                          initial={{ opacity: 0, y: 30 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ duration: 0.4 }}
+                        >
+                          <ProductCard product={product} />
+                        </motion.div>
+                      </Col>
+                    ))}
+                  </Row>
+                </div>
+              ))
             )}
           </>
         )}

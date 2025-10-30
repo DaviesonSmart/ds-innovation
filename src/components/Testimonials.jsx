@@ -1,8 +1,8 @@
+// src/components/Testimonials.jsx
 import React from "react";
 import { Card } from "react-bootstrap";
 import { motion } from "framer-motion";
-import { toast } from "react-toastify";
-
+import { fadeRight } from "../animations"; // 👈 import animation variant
 
 const testimonials = [
   {
@@ -28,9 +28,15 @@ const testimonials = [
 
 export default function Testimonials() {
   return (
-    <div className="bg-white py-5">
+    <motion.section
+      className="bg-white py-5"
+      variants={fadeRight}
+      initial="initial"
+      animate="animate"
+    >
       <div className="container text-center">
-        <h3 className="mb-4">What Our Customers Say</h3>
+        <h3 className="mb-4 fw-bold">What Our Customers Say</h3>
+
         <div className="row">
           {testimonials.map((testimonial, index) => (
             <motion.div
@@ -41,33 +47,27 @@ export default function Testimonials() {
               viewport={{ once: true }}
               transition={{ delay: index * 0.2, duration: 0.6 }}
             >
-              <motion.div
-                className="h-100"
-                initial={{ opacity: 0, y: 40 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: index * 0.2, duration: 0.6 }}
-              >
-                <Card className="h-100 shadow-sm border-0 rounded-4">
-                  <Card.Body>
-                    <img
-                      src={testimonial.image}
-                      alt={testimonial.name}
-                      className="rounded-circle mb-3"
-                      width="80"
-                      height="80"
-                    />
-                    <Card.Text>"{testimonial.review}"</Card.Text>
-                    <Card.Title className="text-muted fs-6">
-                      {testimonial.name}
-                    </Card.Title>
-                  </Card.Body>
-                </Card>
-              </motion.div>
+              <Card className="h-100 shadow-sm border-0 rounded-4">
+                <Card.Body>
+                  <img
+                    src={testimonial.image}
+                    alt={testimonial.name}
+                    className="rounded-circle mb-3"
+                    width="80"
+                    height="80"
+                  />
+                  <Card.Text className="fst-italic">
+                    "{testimonial.review}"
+                  </Card.Text>
+                  <Card.Title className="text-muted fs-6">
+                    {testimonial.name}
+                  </Card.Title>
+                </Card.Body>
+              </Card>
             </motion.div>
           ))}
         </div>
       </div>
-    </div>
+    </motion.section>
   );
 }
