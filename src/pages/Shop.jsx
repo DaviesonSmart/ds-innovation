@@ -21,15 +21,15 @@ export default function Shop() {
   const location = useLocation();
   const navigate = useNavigate();
 
-  // --- Get filters from URL ---
   const queryParams = useMemo(
     () => new URLSearchParams(location.search),
     [location.search]
   );
+
   const selectedCategory = queryParams.get("category") || "All";
   const selectedPriceRange = queryParams.get("price") || "All";
 
-  // --- Fetch products ---
+  // Fetch products from Firestore
   useEffect(() => {
     const fetchProducts = async () => {
       try {
@@ -48,7 +48,7 @@ export default function Shop() {
     fetchProducts();
   }, []);
 
-  // --- Extract all categories dynamically ---
+  // Get all categories dynamically
   const categories = useMemo(() => {
     if (!products.length) return ["All"];
     const unique = [
@@ -57,12 +57,11 @@ export default function Shop() {
     return ["All", ...unique];
   }, [products]);
 
-  // --- Filter products ---
+  // Filter products by category and price
   const filteredProducts = useMemo(() => {
     return products.filter((p) => {
       const cat = p.category?.trim();
       const price = parseFloat(p.price || 0);
-
       const inCategory = selectedCategory === "All" || cat === selectedCategory;
       const priceRange = priceRanges.find(
         (r) => r.label === selectedPriceRange
@@ -70,12 +69,10 @@ export default function Shop() {
       const inPrice =
         selectedPriceRange === "All" ||
         (price >= priceRange.min && price <= priceRange.max);
-
       return inCategory && inPrice;
     });
   }, [products, selectedCategory, selectedPriceRange]);
 
-  // --- Group filtered products by category ---
   const groupedProducts = useMemo(() => {
     const groups = {};
     filteredProducts.forEach((p) => {
@@ -86,7 +83,6 @@ export default function Shop() {
     return groups;
   }, [filteredProducts]);
 
-  // --- Update filters in URL ---
   const handleCategoryChange = (cat) => {
     const params = new URLSearchParams(location.search);
     if (cat === "All") params.delete("category");
@@ -101,7 +97,6 @@ export default function Shop() {
     navigate(`/shop?${params.toString()}`);
   };
 
-  // --- Scroll top on change ---
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: "smooth" });
   }, [selectedCategory, selectedPriceRange]);
@@ -130,7 +125,7 @@ export default function Shop() {
           </div>
         ) : (
           <>
-            {/* 🔘 Category Filter */}
+            {/* Category Filter */}
             <div className="d-flex justify-content-center mb-3 flex-wrap gap-2">
               {categories.map((cat) => (
                 <Button
@@ -144,7 +139,7 @@ export default function Shop() {
               ))}
             </div>
 
-            {/* 💰 Price Filter */}
+            {/* Price Filter */}
             <div className="d-flex justify-content-center mb-5 flex-wrap gap-2">
               {priceRanges.map((range) => (
                 <Button
@@ -162,7 +157,7 @@ export default function Shop() {
               ))}
             </div>
 
-            {/* 🛍 Grouped Display by Category */}
+            {/* Grouped Products */}
             {Object.keys(groupedProducts).length === 0 ? (
               <p className="text-center text-muted">No products found.</p>
             ) : (
@@ -171,13 +166,14 @@ export default function Shop() {
                   <h4 className="fw-bold mb-3 text-capitalize border-bottom pb-2">
                     {category}
                   </h4>
-                  <Row className="gx-4 gy-4">
+
+                  <Row className="gx-3 gy-4">
                     {items.map((product) => (
-                      <Col key={product.id} xs={12} sm={6} md={4} lg={3}>
+                      <Col key={product.id} xs={6} sm={6} md={4} lg={3}>
                         <motion.div
                           initial={{ opacity: 0, y: 30 }}
                           animate={{ opacity: 1, y: 0 }}
-                          transition={{ duration: 0.4 }}
+                          transition={{ duration: 0.5 }}
                         >
                           <ProductCard product={product} />
                         </motion.div>

@@ -33,10 +33,7 @@ export default function Home() {
         <Newsletter />
       </motion.div>
 
-      {/* ✅ Footer slides from top */}
-      <motion.div {...fadeDown}>
-        
-      </motion.div>
+      
     </>
   );
 }
