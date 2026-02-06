@@ -6,6 +6,7 @@ import Hero from "../components/Hero";
 import Testimonials from "../components/Testimonials";
 import Newsletter from "../components/Newsletter";
 import { fadeUp, fadeRight, fadeLeft, fadeDown } from "../animations";
+import About from "../pages/About";
 
 export default function Home() {
   return (
@@ -23,6 +24,10 @@ export default function Home() {
         <Hero />
       </motion.div>
 
+      <motion.div {...fadeDown}>
+        <About />
+      </motion.div>
+
       {/* ✅ Testimonials slide from right */}
       <motion.div {...fadeRight}>
         <Testimonials />
@@ -32,8 +37,6 @@ export default function Home() {
       <motion.div {...fadeLeft}>
         <Newsletter />
       </motion.div>
-
-      
     </>
   );
 }

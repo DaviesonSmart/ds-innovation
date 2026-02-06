@@ -32,6 +32,8 @@ import AddProduct from "./pages/AddProduct";
 import ForgotPassword from "./pages/ForgotPassword";
 import Unauthorized from "./pages/Unauthorized";
 import NotFound from "./pages/NotFound";
+import CategoryPage from "./pages/CategoryPage";
+
 
 // Routes
 import PrivateRoute from "./components/PrivateRoute";
@@ -48,7 +50,7 @@ function App() {
       <ScrollToTop />
       <NavigationBar />
 
-       <main className="mt-5 pt-4 pt-md-5">
+      <main className="mt-5 pt-4 pt-md-5">
         <Routes>
           {/* Public Routes */}
           <Route path="/" element={<Home />} />
@@ -61,6 +63,7 @@ function App() {
           <Route path="/wishlist" element={<Wishlist />} />
           <Route path="/admin-login" element={<AdminLogin />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
+          <Route path="/category/:categoryName" element={<CategoryPage />} />
 
           {/* Protected Routes */}
           <Route
@@ -134,9 +137,7 @@ function App() {
           <Route path="/unauthorized" element={<Unauthorized />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
-
       </main>
-      
 
       <Footer />
       <ToastContainer position="top-right" autoClose={3000} />

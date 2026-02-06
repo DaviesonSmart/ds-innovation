@@ -28,7 +28,6 @@ export default function ProductCard({ product }) {
     }
   };
 
-  // ✅ Category click navigation
   const handleCategoryClick = (e) => {
     e.preventDefault();
     e.stopPropagation();
@@ -39,39 +38,35 @@ export default function ProductCard({ product }) {
   };
 
   return (
-    <Card className="h-100 shadow-sm border-0 rounded-4 position-relative">
-      {/* ✅ Product Image */}
+    <Card className="product-card shadow-sm border-0 rounded-4 position-relative h-100">
+      {/* 🖼️ Product Image */}
       <Link to={`/product/${product.id}`}>
-        <Card.Img
-          variant="top"
-          src={product.image || product.images?.[0]}
-          alt={product.name || "Product"}
-          style={{
-            aspectRatio: "4 / 5",
-            objectFit: "cover",
-            width: "100%",
-          }}
-          onError={(e) => {
-            e.target.onerror = null;
-            e.target.src = "/images/fallback.jpg";
-          }}
-        />
+        <div className="product-img-wrapper">
+          <Card.Img
+            variant="top"
+            src={product.image || product.images?.[0]}
+            alt={product.name || "Product"}
+            onError={(e) => {
+              e.target.onerror = null;
+              e.target.src = "/images/fallback.jpg";
+            }}
+          />
+        </div>
       </Link>
 
       {/* ❤️ Wishlist Icon */}
       <Button
         variant="outline-danger"
-        className="rounded-circle position-absolute top-0 end-0 m-2"
+        className="wishlist-btn rounded-circle position-absolute top-0 end-0 m-2"
         onClick={handleWishlist}
         aria-label="Add to wishlist"
       >
         {isWishlisted ? <FaHeart /> : <FaRegHeart />}
       </Button>
 
-      {/* ✅ Product Info */}
+      {/* 🛍️ Product Info */}
       <Card.Body className="d-flex flex-column justify-content-between">
         <div>
-          {/* 🏷️ Clickable Category */}
           {product.category && (
             <small
               className="text-muted text-uppercase fw-semibold"
@@ -82,7 +77,6 @@ export default function ProductCard({ product }) {
             </small>
           )}
 
-          {/* 🧢 Product Name */}
           <Card.Title className="fw-bold mt-1">
             <Link
               to={`/product/${product.id}`}
@@ -92,13 +86,11 @@ export default function ProductCard({ product }) {
             </Link>
           </Card.Title>
 
-          {/* 💰 Product Price */}
           <Card.Text className="text-muted mb-2">
             ₦{Number(product?.price || 0).toLocaleString()}
           </Card.Text>
         </div>
 
-        {/* 🛒 Add to Cart */}
         <Button
           variant="dark"
           className="mt-2 rounded-pill"
