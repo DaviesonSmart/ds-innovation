@@ -1,5 +1,6 @@
 // src/components/Navbar.jsx
 import React, { useContext, useState, useEffect } from "react";
+import "./Navbar.css";
 import {
   Navbar,
   Nav,
@@ -35,6 +36,7 @@ import { useAuth } from "../contexts/AuthContext";
 import { signOut } from "firebase/auth";
 import { auth, db } from "../firebaseHelpers";
 import { collection, getDocs } from "firebase/firestore";
+
 
 export default function NavigationBar() {
   const { cartItems = [] } = useContext(CartContext);
@@ -95,7 +97,7 @@ export default function NavigationBar() {
 
   return (
     <>
-      <motion.nav
+      <motion.div
         initial={{ y: -40, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         transition={{ duration: 0.5 }}
@@ -268,7 +270,7 @@ export default function NavigationBar() {
             </Navbar.Collapse>
           </Container>
         </Navbar>
-      </motion.nav>
+      </motion.div>
 
       {/* ✅ Mobile Offcanvas menu */}
       <Offcanvas show={show} onHide={toggleOffcanvas} placement="start">

@@ -7,6 +7,7 @@ import Testimonials from "../components/Testimonials";
 import Newsletter from "../components/Newsletter";
 import { fadeUp, fadeRight, fadeLeft, fadeDown } from "../animations";
 import About from "../pages/About";
+import FeaturedProducts from "../components/FeaturedProducts";
 
 export default function Home() {
   return (
@@ -22,6 +23,10 @@ export default function Home() {
       {/* ✅ Hero slides from bottom */}
       <motion.div {...fadeUp}>
         <Hero />
+      </motion.div>
+
+      <motion.div {...fadeDown}>
+       <FeaturedProducts />
       </motion.div>
 
       <motion.div {...fadeDown}>

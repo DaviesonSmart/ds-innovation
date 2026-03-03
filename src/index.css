@@ -30,39 +30,7 @@ footer a:hover {
     color: #f8d7ff !important;
 }
 
-/* ------------------ NAVBAR ------------------ */
-.nav-link {
-    position: relative;
-    transition: all 0.3s ease;
-}
 
-.nav-link::after {
-    content: '';
-    position: absolute;
-    width: 0%;
-    height: 2px;
-    bottom: -2px;
-    left: 0;
-    background-color: #ffffff;
-    transition: width 0.3s;
-}
-
-.nav-link:hover::after {
-    width: 100%;
-}
-
-.nav-link:hover {
-    transform: scale(1.05);
-    color: #f8f9fa !important;
-}
-
-.navbar {
-    position: sticky;
-    top: 0;
-    z-index: 1030;
-    background-color: #fff !important;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
-}
 
 /* ------------------ PRODUCT DETAIL PAGE ------------------ */
 .product-detail-bg {
@@ -131,10 +99,7 @@ footer a:hover {
     object-fit: cover;
 }
 
-/* Ensure consistent card spacing */
-.row>[class*="col-"] {
-    display: flex;
-}
+
 
 /* ------------------ MOBILE RESPONSIVENESS FIX ------------------ */
 @media (max-width: 576px) {
@@ -175,4 +140,43 @@ footer a:hover {
         flex: 0 0 50%;
         max-width: 50%;
     }
+}
+/* in your CSS file or inline style */
+.product-card-wrapper {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+.product-card {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    /* optional: pushes button to bottom */
+}
+/* Featured Products */
+.featured-card {
+    cursor: pointer;
+    background: #fff;
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.08);
+    transition: transform 0.3s ease;
+}
+
+.featured-img-wrapper {
+    height: 350px;
+    overflow: hidden;
+}
+
+.featured-img-wrapper img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+.featured-info {
+    padding: 12px;
+    text-align: center;
 }

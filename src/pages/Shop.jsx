@@ -9,10 +9,10 @@ import { collection, getDocs } from "firebase/firestore";
 import { useLocation, useNavigate } from "react-router-dom";
 
 const priceRanges = [
-  { label: "All", min: 0, max: Infinity },
-  { label: "Under ₦10,000", min: 0, max: 9999 },
-  { label: "₦10,000 – ₦12,000", min: 10000, max: 12000 },
-  { label: "Above ₦12,000", min: 12001, max: Infinity },
+  { label: "All", value: "all", min: 0, max: Infinity },
+  { label: "Under ₦10,000", value: "under10", min: 0, max: 9999 },
+  { label: "₦10,000 – ₦12,000", value: "10to12", min: 10000, max: 12000 },
+  { label: "Above ₦12,000", value: "above12", min: 12001, max: Infinity },
 ];
 
 export default function Shop() {
@@ -27,7 +27,7 @@ export default function Shop() {
   );
 
   const selectedCategory = queryParams.get("category") || "All";
-  const selectedPriceRange = queryParams.get("price") || "All";
+  const selectedPriceRange = queryParams.get("price") || "all";
 
   // Fetch products from Firestore
   useEffect(() => {
@@ -63,12 +63,16 @@ export default function Shop() {
       const cat = p.category?.trim();
       const price = parseFloat(p.price || 0);
       const inCategory = selectedCategory === "All" || cat === selectedCategory;
+
       const priceRange = priceRanges.find(
-        (r) => r.label === selectedPriceRange
+        (r) => r.value === selectedPriceRange
       );
+
       const inPrice =
-        selectedPriceRange === "All" ||
-        (price >= priceRange.min && price <= priceRange.max);
+        !priceRange || selectedPriceRange === "all"
+          ? true
+          : price >= priceRange.min && price <= priceRange.max;
+
       return inCategory && inPrice;
     });
   }, [products, selectedCategory, selectedPriceRange]);
@@ -90,10 +94,10 @@ export default function Shop() {
     navigate(`/shop?${params.toString()}`);
   };
 
-  const handlePriceChange = (rangeLabel) => {
+  const handlePriceChange = (value) => {
     const params = new URLSearchParams(location.search);
-    if (rangeLabel === "All") params.delete("price");
-    else params.set("price", rangeLabel);
+    if (value === "all") params.delete("price");
+    else params.set("price", value);
     navigate(`/shop?${params.toString()}`);
   };
 
@@ -143,13 +147,13 @@ export default function Shop() {
             <div className="d-flex justify-content-center mb-5 flex-wrap gap-2">
               {priceRanges.map((range) => (
                 <Button
-                  key={range.label}
+                  key={range.value}
                   variant={
-                    selectedPriceRange === range.label
+                    selectedPriceRange === range.value
                       ? "primary"
                       : "outline-primary"
                   }
-                  onClick={() => handlePriceChange(range.label)}
+                  onClick={() => handlePriceChange(range.value)}
                   className="rounded-pill"
                 >
                   {range.label}
@@ -169,14 +173,16 @@ export default function Shop() {
 
                   <Row className="gx-3 gy-4">
                     {items.map((product) => (
-                      <Col key={product.id} xs={6} sm={6} md={4} lg={3}>
-                        <motion.div
-                          initial={{ opacity: 0, y: 30 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          transition={{ duration: 0.5 }}
-                        >
-                          <ProductCard product={product} />
-                        </motion.div>
+                      <Col key={product.id} xs={6} sm={6} md={4} lg={3} className="d-flex">
+                        <div className="product-card-wrapper">
+                          <motion.div
+                            initial={{ opacity: 0, y: 30 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ duration: 0.5 }}
+                          >
+                            <ProductCard product={product} />
+                          </motion.div>
+                        </div>
                       </Col>
                     ))}
                   </Row>
