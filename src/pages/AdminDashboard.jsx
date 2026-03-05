@@ -22,14 +22,14 @@ export default function AdminDashboard() {
 
       {/* Overview Cards */}
       <Row className="mb-4">
-        <Col md={3}>
-          <Card className="shadow-sm border-0">
-            <Card.Body>
-              <h5>Total Orders</h5>
-              <h2>{orders.length}</h2>
-            </Card.Body>
-          </Card>
-        </Col>
+  <Col xs={12} sm={6} md={3}>
+    <Card className="shadow-sm border-0">
+      <Card.Body>
+        <h5>Total Orders</h5>
+        <h2>{orders.length}</h2>
+      </Card.Body>
+    </Card>
+  </Col>
 
         <Col md={3}>
           <Card className="shadow-sm border-0">
