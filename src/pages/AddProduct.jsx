@@ -17,12 +17,13 @@ import { addDoc, collection, serverTimestamp } from "firebase/firestore";
 import axios from "axios";
 
 export default function AddProduct() {
-  const [form, setForm] = useState({
-    name: "",
-    price: "",
-    category: "",
-    description: "",
-  });
+ const [form, setForm] = useState({
+  name: "",
+  price: "",
+  category: "",
+  description: "",
+  featured: false,
+});
   const [imageFiles, setImageFiles] = useState([]); // multiple images
   const [uploadProgress, setUploadProgress] = useState({});
   const navigate = useNavigate();
@@ -73,7 +74,7 @@ export default function AddProduct() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const { name, price, category, description } = form;
+   const { name, price, category, description, featured } = form;
 
     if (!name || !price || !category || !description || !imageFiles.length) {
       toast.error("Please fill in all fields and upload images");
@@ -100,7 +101,8 @@ export default function AddProduct() {
         price: parseFloat(price),
         category,
         description,
-        images: imageUrls, // clean array of URLs
+        featured,
+        images: imageUrls,
         createdAt: serverTimestamp(),
       });
 
@@ -198,6 +200,21 @@ export default function AddProduct() {
                     required
                   />
                 </Form.Group>
+
+                <Form.Group className="mb-3">
+                <Form.Check
+                  type="checkbox"
+                  label="Mark as Featured Product"
+                  name="featured"
+                  checked={form.featured}
+                  onChange={(e) =>
+                    setForm((prev) => ({
+                      ...prev,
+                      featured: e.target.checked,
+                    }))
+                  }
+                />
+              </Form.Group>
 
                 <Button variant="dark" type="submit" className="w-100">
                   Save Product

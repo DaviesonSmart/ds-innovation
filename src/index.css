@@ -171,6 +171,7 @@ footer a:hover {
 .featured-img-wrapper {
     height: 260px;
     overflow: hidden;
+    position: relative;
 }
 
 .featured-img-wrapper img {
@@ -188,4 +189,27 @@ footer a:hover {
     .featured-img-wrapper {
         height: 180px;
     }
+}
+.img-primary {
+  position: absolute;
+  top: 0;
+  left: 0;
+  opacity: 1;
+}
+
+/* Second image */
+.img-hover {
+  position: absolute;
+  top: 0;
+  left: 0;
+  opacity: 0;
+}
+
+/* Hover effect */
+.featured-card:hover .img-primary {
+  opacity: 0;
+}
+
+.featured-card:hover .img-hover {
+  opacity: 1;
 }

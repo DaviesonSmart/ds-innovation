@@ -17,7 +17,7 @@ export default function FeaturedProducts() {
         const q = query(
           collection(db, "products"),
           where("featured", "==", true),
-          limit(4)
+          limit(8)
         );
         const snapshot = await getDocs(q);
         const data = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
@@ -46,29 +46,43 @@ export default function FeaturedProducts() {
   return (
     <Container className="py-5">
       <h3 className="text-center fw-bold mb-4">Featured Products</h3>
-      <Row className="gx-4 gy-4">
-        {products.map((product) => (
-          <Col key={product.id} xs={12} sm={6} md={6} lg={3}>
-          <motion.div
-  className="featured-card"
-  whileHover={{ scale: 1.03 }}
-  initial={{ opacity: 0, y: 30 }}
-  animate={{ opacity: 1, y: 0 }}
-  transition={{ duration: 0.4 }}
-  onClick={() => navigate(`/shop?category=${product.category}`)}
->
-  <div className="featured-img-wrapper">
-    <img src={product.images?.[0]} alt={product.name} />
-  </div>
+    <Row className="gx-4 gy-4">
+  {products.map((product) => (
+    <Col key={product.id} xs={6} md={4} lg={3}>
+      <motion.div
+        className="featured-card"
+        whileHover={{ scale: 1.03 }}
+        initial={{ opacity: 0, y: 30 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.4 }}
+        onClick={() => navigate(`/product/${product.id}`)}
+      >
+        <div className="featured-img-wrapper">
+  <img
+    src={product.images?.[0]}
+    alt={product.name}
+    className="img-primary"
+    loading="lazy"
+  />
 
-  <div className="featured-info">
-    <h6>{product.name}</h6>
-    <span className="price">₦{product.price}</span>
-  </div>
-</motion.div>
-          </Col>
-        ))}
-      </Row>
+  {product.images?.[1] && (
+    <img
+      src={product.images?.[1]}
+      alt={product.name}
+      className="img-hover"
+      loading="lazy"
+    />
+  )}
+</div>
+
+        <div className="featured-info">
+          <h6>{product.name}</h6>
+          <span className="price">₦{product.price}</span>
+        </div>
+      </motion.div>
+    </Col>
+  ))}
+</Row>
     </Container>
   );
 }
