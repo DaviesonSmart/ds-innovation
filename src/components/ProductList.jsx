@@ -73,7 +73,7 @@ export default function ProductList({ enableNavigation = false }) {
   }, [products]);
 
   return (
-    <Container fluid className="py-5 px-4 bg-light">
+   <Container fluid className="py-4 px-2 px-md-4 bg-light">
       <h2 className="text-center fw-bold mb-4">
         {enableNavigation ? "Our Latest Collections" : "Shop Our Collection"}
       </h2>
@@ -121,19 +121,15 @@ export default function ProductList({ enableNavigation = false }) {
               </div>
 
               {/* Products Grid */}
-              <Row className="gx-4 gy-4">
+              <Row className="g-3 g-md-4">
                 {filteredProducts.length > 0 ? (
                   filteredProducts.map((product) => (
-                    <Col key={product.id} xs={12} sm={6} md={4} lg={3}>
-                      <motion.div
-                        initial={{ opacity: 0, y: 30 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.4 }}
-                      >
-                        <ProductCard product={product} />
-                      </motion.div>
-                    </Col>
-                  ))
+                  <Col xs={12} sm={6} md={4} lg={3} className="d-flex">
+                  <motion.div className="w-100">
+                    <ProductCard product={product} />
+                  </motion.div>
+                </Col>
+                                  ))
                 ) : (
                   <Col>
                     <p className="text-center text-muted">No products found.</p>

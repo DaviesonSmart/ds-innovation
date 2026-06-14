@@ -38,7 +38,7 @@ export default function ProductCard({ product }) {
   };
 
   return (
-    <Card className="product-card shadow-sm border-0 rounded-4 position-relative h-100">
+    <Card className="product-card shadow-sm border-0 rounded-4 position-relative h-100 d-flex flex-column">
       {/* 🖼️ Product Image */}
       <Link to={`/product/${product.id}`}>
         <div className="product-img-wrapper">

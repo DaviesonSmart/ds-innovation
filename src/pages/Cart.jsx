@@ -49,7 +49,8 @@ export default function Cart() {
                 <Card className="h-100 shadow-sm">
                   <Card.Img
                     variant="top"
-                    src={item?.image || "https://via.placeholder.com/150"}
+                    src={item?.images?.[0]}
+                    alt={item?.name}
                   />
                   <Card.Body>
                     <Card.Title>{item?.name}</Card.Title>
