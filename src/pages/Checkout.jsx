@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { Container, Row, Col, Card, Form, Button } from "react-bootstrap";
 import { CartContext } from "../contexts/CartContext";
 import emailjs from "emailjs-com";
-import { usePaystackPayment } from "react-paystack";
+import { useFlutterwave, closePaymentModal } from "flutterwave-react-v3";
 import { db } from "../firebaseHelpers"; // ✅ your firebase config
 import { collection, addDoc, serverTimestamp } from "firebase/firestore";
 
@@ -36,14 +36,25 @@ const Checkout = () => {
     }));
   };
 
-  const paystackConfig = {
-    reference: new Date().getTime().toString(),
+  const flutterwaveConfig = {
+  public_key: "FLWPUBK_TEST-4503bd543c1324240ac368dbe192fa4a-X",
+  tx_ref: Date.now().toString(),
+  amount: totalAmount,
+  currency: "NGN",
+  payment_options: "card,banktransfer,ussd",
+  customer: {
     email: form.email,
-    amount: totalAmount * 100,
-    publicKey: "pk_test_b8a9325c39746dc553bdabcdcef82973d11f1430",
-  };
+    name: form.name,
+  },
+  customizations: {
+    title: "SmartTech Collections",
+    description: "Fashion Order Payment",
+  },
+};
 
-  const initializePayment = usePaystackPayment(paystackConfig);
+const handleFlutterPayment = useFlutterwave(flutterwaveConfig);
+  
+
 
   const saveOrderToFirestore = async (orderData) => {
     try {
@@ -108,14 +119,7 @@ const Checkout = () => {
       });
   };
 
-  const handlePaymentSuccess = (reference) => {
-    console.log("✅ Payment successful:", reference);
-    processOrder("Paid", reference.reference);
-  };
-
-  const handlePaymentClose = () => {
-    console.log("❌ Payment popup closed by user");
-  };
+ 
 
 const handleSubmit = (e) => {
   e.preventDefault();
@@ -130,12 +134,26 @@ const handleSubmit = (e) => {
     return;
   }
 
-  if (form.payment === "Paystack Online Payment") {
-    initializePayment(handlePaymentSuccess, handlePaymentClose);
-  } else {
-    processOrder("Pending");
+  if (form.payment === "Flutterwave Online Payment") {
+  handleFlutterPayment({
+    callback: (response) => {
+      console.log(response);
+
+      if (response.status === "successful") {
+        processOrder("Paid", response.transaction_id);
+      }
+
+      closePaymentModal();
+    },
+
+    onClose: () => {
+      console.log("Payment closed");
+    },
+  });
+} else {
+  processOrder("Pending");
   }
-};
+  };
 
 
   return (
@@ -199,21 +217,21 @@ const handleSubmit = (e) => {
                       onChange={handleChange}
                       required
                     />
-                    <Form.Check
-                      type="radio"
-                      label="Paystack Online Payment"
-                      name="payment"
-                      value="Paystack Online Payment"
-                      onChange={handleChange}
-                      required
-                    />
+                   <Form.Check
+                    type="radio"
+                    label="Flutterwave Online Payment"
+                    name="payment"
+                    value="Flutterwave Online Payment"
+                    onChange={handleChange}
+                    required
+                  />
                   </div>
                 </Form.Group>
 
                 <Button variant="dark" type="submit" className="w-100 mt-3">
-                  {form.payment === "Paystack Online Payment"
-                    ? "Pay with Paystack"
-                    : "Place Order"}
+                  {form.payment === "Flutterwave Online Payment"
+                  ? "Pay with Flutterwave"
+                  : "Place Order"}
                 </Button>
               </Form>
 
