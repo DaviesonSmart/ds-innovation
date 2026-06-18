@@ -5,8 +5,8 @@ import { motion } from "framer-motion";
 import Hero from "../components/Hero";
 import Testimonials from "../components/Testimonials";
 import Newsletter from "../components/Newsletter";
+import AboutSection from "../components/AboutSection";
 import { fadeUp, fadeRight, fadeLeft, fadeDown } from "../animations";
-import About from "../pages/About";
 import FeaturedProducts from "../components/FeaturedProducts";
 
 export default function Home() {
@@ -29,9 +29,9 @@ export default function Home() {
        <FeaturedProducts />
       </motion.div>
 
-      <motion.div {...fadeDown}>
-        <About />
-      </motion.div>
+     <motion.div {...fadeDown}>
+  <AboutSection />
+</motion.div>
 
       {/* ✅ Testimonials slide from right */}
       <motion.div {...fadeRight}>

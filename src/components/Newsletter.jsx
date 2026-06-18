@@ -9,7 +9,7 @@ import {
   ToastContainer,
 } from "react-bootstrap";
 import { motion } from "framer-motion";
-import { toast } from "react-toastify";
+
 
 export default function Newsletter() {
   const [email, setEmail] = useState("");
@@ -23,27 +23,31 @@ export default function Newsletter() {
     }
   };
 
-  return (
-    <motion.div
-      className="newsletter-section py-5"
-      style={{
-        background: "linear-gradient(to right, #f9f9f9, #dbeafe)",
-        borderRadius: "20px",
-        margin: "40px 0",
-        position: "relative",
-      }}
-      initial={{ opacity: 0, y: 50 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.8 }}
-    >
+          return (
+        <motion.div
+          className="newsletter-section"
+          initial={{ opacity: 200, y: 90 }}
+          whileInView={{ opacity: 1, y: 8 }}
+          transition={{ duration: 0.8 }}
+        >
       <Container>
         <Row className="align-items-center">
           <Col md={6}>
-            <h3 className="fw-bold mb-3">Join Our Newsletter</h3>
-            <p className="text-muted">
-              Be the first to know about new arrivals, exclusive offers, and
-              more.
-            </p>
+                    <p
+          className="text-primary fw-semibold mb-2"
+          style={{ letterSpacing: "2px" }}
+        >
+          STAY CONNECTED
+          </p>
+
+<h2 className="fw-bold display-6 mb-3">
+  Get Exclusive Fashion Updates
+</h2>
+
+<p className="text-muted">
+  Subscribe to receive new arrivals, special discounts,
+  fashion tips, and members-only offers.
+</p>
           </Col>
           <Col md={6}>
             <Form onSubmit={handleSubmit} className="d-flex gap-2" role="form">

@@ -2,12 +2,18 @@ import React from "react";
 import { Container, Row, Col, Image } from "react-bootstrap";
 import NavigationBar from "../components/NavigationBar";
 import { motion } from "framer-motion";
+import {
+  FaGem,
+  FaShippingFast,
+  FaShieldAlt,
+  FaTshirt,
+} from "react-icons/fa";
 
 
 export default function About() {
   return (
     <>
-      <NavigationBar />
+     
 
       {/* Hero Section */}
       <motion.div
@@ -70,44 +76,81 @@ export default function About() {
         </Row>
 
         {/* Why Choose Us */}
-        <section className="mt-5">
-          <h3 className="text-center fw-bold mb-4">Why Choose SmartTech?</h3>
-          <Row className="text-center">
-            <Col md={4}>
-              <motion.div
-                whileHover={{ scale: 1.05 }}
-                className="p-4 border rounded-4 shadow-sm"
-              >
-                <h5 className="fw-bold">Quality Materials</h5>
-                <p className="text-muted">
-                  Every piece is crafted with care using premium fabrics.
-                </p>
-              </motion.div>
-            </Col>
-            <Col md={4}>
-              <motion.div
-                whileHover={{ scale: 1.05 }}
-                className="p-4 border rounded-4 shadow-sm"
-              >
-                <h5 className="fw-bold">Trendy & Elegant</h5>
-                <p className="text-muted">
-                  We bring you modern styles that speak confidence and beauty.
-                </p>
-              </motion.div>
-            </Col>
-            <Col md={4}>
-              <motion.div
-                whileHover={{ scale: 1.05 }}
-                className="p-4 border rounded-4 shadow-sm"
-              >
-                <h5 className="fw-bold">Affordable Luxury</h5>
-                <p className="text-muted">
-                  Look like a queen without breaking the bank.
-                </p>
-              </motion.div>
-            </Col>
-          </Row>
-        </section>
+        <section className="mt-5 py-5">
+  <div className="text-center mb-5">
+    <p
+      className="text-primary fw-semibold mb-2"
+      style={{ letterSpacing: "2px" }}
+    >
+      WHY CHOOSE US
+    </p>
+
+    <h2 className="fw-bold display-6">
+      Fashion Designed For Confidence
+    </h2>
+
+    <p className="text-muted">
+      More than clothing — we deliver style, quality and confidence.
+    </p>
+  </div>
+
+  <Row className="g-4">
+    <Col md={6} lg={3}>
+      <motion.div
+        whileHover={{ y: -10 }}
+        className="why-card"
+      >
+        <FaGem size={40} className="why-icon" />
+        <h5>Premium Quality</h5>
+        <p>
+          Carefully selected fabrics for comfort,
+          durability and elegance.
+        </p>
+      </motion.div>
+    </Col>
+
+    <Col md={6} lg={3}>
+      <motion.div
+        whileHover={{ y: -10 }}
+        className="why-card"
+      >
+        <FaTshirt size={40} className="why-icon" />
+        <h5>Trendy Styles</h5>
+        <p>
+          Stay ahead with fashion collections
+          inspired by modern women.
+        </p>
+      </motion.div>
+    </Col>
+
+    <Col md={6} lg={3}>
+      <motion.div
+        whileHover={{ y: -10 }}
+        className="why-card"
+      >
+        <FaShippingFast size={40} className="why-icon" />
+        <h5>Fast Delivery</h5>
+        <p>
+          Reliable delivery to customers
+          across Nigeria.
+        </p>
+      </motion.div>
+    </Col>
+
+    <Col md={6} lg={3}>
+      <motion.div
+        whileHover={{ y: -10 }}
+        className="why-card"
+      >
+        <FaShieldAlt size={40} className="why-icon" />
+        <h5>Secure Shopping</h5>
+        <p>
+          Safe checkout experience and trusted service.
+        </p>
+      </motion.div>
+    </Col>
+  </Row>
+</section>
       </Container>
     </>
   );
