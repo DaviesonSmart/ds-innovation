@@ -620,3 +620,108 @@ footer a:hover {
     text-align: center;
     color: #9ca3af;
 }
+
+/* NEW ARRIVALS */
+
+.new-arrivals-section {
+    background: #fff;
+}
+
+.arrival-card {
+    cursor: pointer;
+    background: white;
+    border-radius: 20px;
+    overflow: hidden;
+    height: 100%;
+    box-shadow: 0 8px 25px rgba(0, 0, 0, .08);
+    transition: all .3s ease;
+}
+
+.arrival-card:hover {
+    box-shadow: 0 20px 40px rgba(0, 0, 0, .12);
+}
+
+.arrival-image-wrapper {
+    height: 320px;
+    overflow: hidden;
+}
+
+.arrival-image-wrapper img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: .5s;
+}
+
+.arrival-card:hover img {
+    transform: scale(1.08);
+}
+
+.arrival-info {
+    padding: 15px;
+}
+
+.arrival-badge {
+    background: #0d6efd;
+    color: white;
+    padding: 4px 10px;
+    border-radius: 30px;
+    font-size: .75rem;
+    font-weight: 600;
+}
+
+.arrival-price {
+    font-weight: 700;
+    color: #0d6efd;
+    margin-top: 10px;
+}
+
+/* CATEGORY SECTION */
+
+.category-card {
+    position: relative;
+    height: 350px;
+    overflow: hidden;
+    border-radius: 20px;
+    cursor: pointer;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+}
+
+.category-card img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: .5s ease;
+}
+
+.category-card:hover img {
+    transform: scale(1.1);
+}
+
+.category-overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, .35);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.category-overlay h4 {
+    color: white;
+    font-weight: 700;
+    font-size: 1.8rem;
+    text-align: center;
+}
+
+@media (max-width: 768px) {
+    .category-card {
+        height: 250px;
+    }
+
+    .category-overlay h4 {
+        font-size: 1.4rem;
+    }
+
+
+}

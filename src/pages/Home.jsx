@@ -8,6 +8,8 @@ import Newsletter from "../components/Newsletter";
 import AboutSection from "../components/AboutSection";
 import { fadeUp, fadeRight, fadeLeft, fadeDown } from "../animations";
 import FeaturedProducts from "../components/FeaturedProducts";
+import NewArrivals from "../components/NewArrivals";
+import CategorySection from "../components/CategorySection";
 
 export default function Home() {
   return (
@@ -25,10 +27,20 @@ export default function Home() {
         <Hero />
       </motion.div>
 
+      <motion.div {...fadeUp}>
+        <CategorySection/>
+      </motion.div>
+      
+
       <motion.div {...fadeDown}>
        <FeaturedProducts />
       </motion.div>
 
+      <motion.div {...fadeDown}>
+      <NewArrivals />
+      </motion.div>
+
+    
      <motion.div {...fadeDown}>
   <AboutSection />
 </motion.div>

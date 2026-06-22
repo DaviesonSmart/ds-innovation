@@ -137,12 +137,12 @@ export default function AdminProducts() {
                       <td>{index + 1}</td>
                       <td>
                         <img
-                          src={product.image}
-                          alt={product.name}
-                          width="60"
-                          height="60"
-                          style={{ objectFit: "cover" }}
-                        />
+                      src={product.images?.[0]}
+                      alt={product.name}
+                      width="60"
+                      height="60"
+                      style={{ objectFit: "cover" }}
+                    />
                       </td>
                       <td>{product.name}</td>
                       <td>{product.price.toLocaleString()}</td>
