@@ -725,3 +725,64 @@ footer a:hover {
 
 
 }
+
+/* TRUST BADGES */
+
+.trust-section {
+    background: #ffffff;
+}
+
+.trust-card {
+    background: #fff;
+    padding: 30px 20px;
+    border-radius: 20px;
+    height: 100%;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.06);
+    transition: all 0.3s ease;
+}
+
+.trust-card:hover {
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.12);
+}
+
+.trust-icon {
+    color: #0d6efd;
+    display: flex;
+    justify-content: center;
+}
+.main-product-image {
+    width: 100%;
+    height: 600px;
+    object-fit: cover;
+    border-radius: 20px;
+}
+
+.thumbnail-container {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.thumbnail-image {
+    width: 80px;
+    height: 80px;
+    object-fit: cover;
+    cursor: pointer;
+    border-radius: 12px;
+    border: 2px solid transparent;
+}
+
+.active-thumb {
+    border: 2px solid #0d6efd;
+}
+
+.product-benefits p {
+    font-weight: 500;
+    margin-bottom: 12px;
+}
+
+@media (max-width: 768px) {
+    .main-product-image {
+        height: 400px;
+    }
+}

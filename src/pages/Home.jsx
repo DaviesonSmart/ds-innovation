@@ -10,6 +10,7 @@ import { fadeUp, fadeRight, fadeLeft, fadeDown } from "../animations";
 import FeaturedProducts from "../components/FeaturedProducts";
 import NewArrivals from "../components/NewArrivals";
 import CategorySection from "../components/CategorySection";
+import TrustBadges from "../components/TrustBadges";
 
 export default function Home() {
   return (
@@ -40,10 +41,16 @@ export default function Home() {
       <NewArrivals />
       </motion.div>
 
+
+
+      <motion.div {...fadeDown}>
+      <TrustBadges />
+      </motion.div>
+
     
-     <motion.div {...fadeDown}>
-  <AboutSection />
-</motion.div>
+          <motion.div {...fadeDown}>
+        <AboutSection />
+      </motion.div>
 
       {/* ✅ Testimonials slide from right */}
       <motion.div {...fadeRight}>
