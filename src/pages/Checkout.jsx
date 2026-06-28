@@ -56,70 +56,82 @@ const handleFlutterPayment = useFlutterwave(flutterwaveConfig);
   
 
 
-  const saveOrderToFirestore = async (orderData) => {
-    try {
-      await addDoc(collection(db, "orders"), {
-        ...orderData,
-        createdAt: serverTimestamp(),
-      });
-      console.log("✅ Order saved to Firestore");
-    } catch (error) {
-      console.error("❌ Firestore error:", error);
-    }
+ const saveOrderToFirestore = async (orderData) => {
+   try {
+     const docRef = await addDoc(collection(db, "orders"), {
+       ...orderData,
+       createdAt: serverTimestamp(),
+     });
+
+     console.log("✅ Firestore Order Saved");
+     console.log("Document ID:", docRef.id);
+
+     return true;
+   } catch (error) {
+     console.error("🔥 FIRESTORE ERROR");
+     console.error(error);
+     alert(error.message);
+
+     return false;
+   }
+ };
+
+const processOrder = async (status, paymentRef = null) => {
+  console.log("🚀 processOrder() started");
+
+  const newOrder = {
+    ...form,
+    cart: cartItems,
+    total: totalAmount,
+    status,
+    paymentRef,
+    date: new Date().toISOString(),
   };
 
-  const processOrder = async (status, paymentRef = null) => {
-    const newOrder = {
-      ...form,
-      cart: cartItems,
-      total: totalAmount,
-      status,
-      paymentRef,
-      date: new Date().toISOString(),
-    };
+  const saved = await saveOrderToFirestore(newOrder);
 
-    // Save to localStorage (backup)
-    const existingOrders =
-      JSON.parse(localStorage.getItem("smarttech-orders")) || [];
-    localStorage.setItem(
-      "smarttech-orders",
-      JSON.stringify([...existingOrders, newOrder])
-    );
-    localStorage.setItem("smarttech-latest-order", JSON.stringify(newOrder));
+  console.log("Firestore Save Result:", saved);
 
-    // Save to Firestore
-    await saveOrderToFirestore(newOrder);
+  if (!saved) return;
 
-    // Send Email via EmailJS
-    const templateParams = {
-      user_name: form.name,
-      user_email: form.email,
-      user_address: form.address,
-      payment_method: form.payment,
-      order_total: newOrder.total,
-      order_items: cartItems
-        .map((item) => `${item.name} x${item.quantity || 1}`)
-        .join(", "),
-    };
+  const existingOrders =
+    JSON.parse(localStorage.getItem("smarttech-orders")) || [];
 
-    emailjs
-      .send(
-        "service_k6i5nf9",
-        "template_eiyfbib",
-        templateParams,
-        "XnyElvWzPmfiuzilU"
-      )
-      .then(() => {
-        console.log("✅ Email sent!");
-        clearCart();
-        navigate("/order-confirmation");
-      })
-      .catch((err) => {
-        console.error("❌ Email failed:", err);
-      });
+  localStorage.setItem(
+    "smarttech-orders",
+    JSON.stringify([...existingOrders, newOrder]),
+  );
+
+  localStorage.setItem("smarttech-latest-order", JSON.stringify(newOrder));
+
+  const templateParams = {
+    user_name: form.name,
+    user_email: form.email,
+    user_address: form.address,
+    payment_method: form.payment,
+    order_total: newOrder.total,
+    order_items: cartItems
+      .map((item) => `${item.name} x${item.quantity || 1}`)
+      .join(", "),
   };
 
- 
+  emailjs
+    .send(
+      "service_k6i5nf9",
+      "template_eiyfbib",
+      templateParams,
+      "XnyElvWzPmfiuzilU",
+    )
+    .then(() => {
+      console.log("✅ Email Sent");
+      clearCart();
+      navigate("/order-confirmation");
+    })
+    .catch((err) => {
+      console.error("Email Error:", err);
+    });
+};
+
 
 const handleSubmit = (e) => {
   e.preventDefault();
@@ -135,25 +147,35 @@ const handleSubmit = (e) => {
   }
 
   if (form.payment === "Flutterwave Online Payment") {
-  handleFlutterPayment({
-    callback: (response) => {
-      console.log(response);
+    handleFlutterPayment({
+      callback: async (response) => {
+        console.log("========== FLUTTERWAVE RESPONSE ==========");
+        console.log(response);
 
-      if (response.status === "successful") {
-        processOrder("Paid", response.transaction_id);
-      }
 
-      closePaymentModal();
-    },
+        if (
+          response.status === "successful" ||
+          response.status === "Successful" ||
+          response.status === "completed"
+        ) {
+          console.log("✅ Payment successful. Saving order...");
 
-    onClose: () => {
-      console.log("Payment closed");
-    },
-  });
-} else {
-  processOrder("Pending");
+          await processOrder("Paid", response.transaction_id || response.id);
+        } else {
+          console.log("❌ Payment status:", response.status);
+        }
+
+        closePaymentModal();
+      },
+
+      onClose: () => {
+        console.log("Payment closed");
+      },
+    });
+  } else {
+    processOrder("Pending");
   }
-  };
+};
 
 
   return (

@@ -10,6 +10,7 @@ import Loader from "../components/LoadingSpinner";
 import ProductCard from "../components/ProductCard";
 import { WishlistContext } from "../contexts/WishlistContext";
 import { toast } from "react-toastify";
+import ProductReviews from "../components/ProductReviews";
 
 export default function ProductDetails() {
   const { id } = useParams();
@@ -122,11 +123,10 @@ export default function ProductDetails() {
               <Button
                 size="lg"
                 variant="outline-danger"
-                onClick={() => {addToWishlist(product)
-               toast.success("Added to Wishlist ❤️")
-                  
+                onClick={() => {
+                  addToWishlist(product);
+                  toast.success("Added to Wishlist ❤️");
                 }}
-                
               >
                 <FaHeart className="me-2" />
                 Wishlist
@@ -159,6 +159,8 @@ export default function ProductDetails() {
             </Row>
           </div>
         )}
+
+        <ProductReviews productId={product.id} />
       </Container>
     </>
   );

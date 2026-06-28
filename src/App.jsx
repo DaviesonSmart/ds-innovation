@@ -6,6 +6,7 @@ import { auth } from "./firebaseHelpers";
 import { AuthProvider } from "./contexts/AuthContext";
 
 
+
 // UI Components
 import NavigationBar from "./components/NavigationBar";
 import Footer from "./components/Footer";
@@ -33,6 +34,7 @@ import ForgotPassword from "./pages/ForgotPassword";
 import Unauthorized from "./pages/Unauthorized";
 import NotFound from "./pages/NotFound";
 import CategoryPage from "./pages/CategoryPage";
+import SmarttechDashboard from "./pages/SmarttechDashboard";
 
 
 // Routes
@@ -64,7 +66,7 @@ function App() {
           <Route path="/admin-login" element={<AdminLogin />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
           <Route path="/category/:categoryName" element={<CategoryPage />} />
-
+          <Route path="/dashboard" element={<SmarttechDashboard />} />
           {/* Protected Routes */}
           <Route
             path="/cart"

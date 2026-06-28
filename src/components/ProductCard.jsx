@@ -7,6 +7,7 @@ import { Card, Button } from "react-bootstrap";
 import { useCart } from "../contexts/CartContext";
 import { toast } from "react-toastify";
 
+
 export default function ProductCard({ product }) {
   const { addToCart } = useCart();
   const navigate = useNavigate();
@@ -85,6 +86,8 @@ export default function ProductCard({ product }) {
               {product.name}
             </Link>
           </Card.Title>
+
+         
 
           <Card.Text className="text-muted mb-2">
             ₦{Number(product?.price || 0).toLocaleString()}

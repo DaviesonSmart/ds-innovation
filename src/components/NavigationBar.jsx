@@ -37,7 +37,6 @@ import { signOut } from "firebase/auth";
 import { auth, db } from "../firebaseHelpers";
 import { collection, getDocs } from "firebase/firestore";
 
-
 export default function NavigationBar() {
   const { cartItems = [] } = useContext(CartContext);
   const { wishlistItems = [] } = useContext(WishlistContext);
@@ -81,7 +80,9 @@ export default function NavigationBar() {
         const products = querySnapshot.docs.map((doc) => doc.data());
         const unique = [
           ...new Set(
-            products.map((p) => p.category?.trim()).filter((c) => c && c !== "")
+            products
+              .map((p) => p.category?.trim())
+              .filter((c) => c && c !== ""),
           ),
         ];
         setCategories(unique);
@@ -267,6 +268,8 @@ export default function NavigationBar() {
                   </>
                 )}
               </Nav>
+
+              
             </Navbar.Collapse>
           </Container>
         </Navbar>

@@ -33,11 +33,11 @@ export default function Wishlist() {
               {/* Image goes here */}
               <Card.Img
                 variant="top"
-                src={product.image}
+                src={product.images?.[0] || product.image}
                 alt={product.name}
                 className="w-100 d-block"
                 style={{
-                  aspectRatio: "4 / 5", // ✅ Keeps ratio locked
+                  aspectRatio: "4 / 5",
                   objectFit: "cover",
                 }}
               />
